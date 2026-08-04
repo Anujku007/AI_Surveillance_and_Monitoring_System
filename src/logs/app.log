@@ -1,0 +1,75 @@
+2026-08-04 18:50:39 | INFO     | Database initialized (tables ready)
+2026-08-04 19:01:40 | ERROR    | Loading OpenCV DNN face detector | error: OpenCV(4.10.0) D:\a\opencv-python\opencv-python\opencv\modules\dnn\src\caffe\caffe_io.cpp:1126: error: (-2:Unspecified error) FAILED: fs.is_open(). Can't open "D:\AI-Surveillance System\src\models\deploy.prototxt" in function 'cv::dnn::ReadProtoFromTextFile'
+ [detector.py:22 in __init__()]
+2026-08-04 19:01:41 | INFO     | Press 'q' to quit the detector test
+2026-08-04 19:02:21 | INFO     | Database initialized (tables ready)
+2026-08-04 19:02:21 | ERROR    | Loading OpenCV DNN face detector | error: OpenCV(4.10.0) D:\a\opencv-python\opencv-python\opencv\modules\dnn\src\caffe\caffe_io.cpp:1126: error: (-2:Unspecified error) FAILED: fs.is_open(). Can't open "D:\AI-Surveillance System\src\models\deploy.prototxt" in function 'cv::dnn::ReadProtoFromTextFile'
+ [detector.py:22 in __init__()]
+2026-08-04 19:02:21 | INFO     | FaceEncoder initialized with 0 known person(s)
+2026-08-04 19:02:22 | INFO     | Press 'q' to quit the encoder test
+2026-08-04 19:05:23 | INFO     | Face detector model loaded successfully
+2026-08-04 19:05:24 | INFO     | Press 'q' to quit the detector test
+2026-08-04 19:06:19 | INFO     | Database initialized (tables ready)
+2026-08-04 19:06:20 | INFO     | Face detector model loaded successfully
+2026-08-04 19:06:20 | INFO     | FaceEncoder initialized with 0 known person(s)
+2026-08-04 19:06:20 | INFO     | Press 'q' to quit the encoder test
+2026-08-04 19:06:21 | ERROR    | Encoding detected faces | TypeError: compute_face_descriptor(): incompatible function arguments. The following argument types are supported:
+    1. (self: _dlib_pybind11.face_recognition_model_v1, img: numpy.ndarray[(rows,cols,3),numpy.uint8], face: _dlib_pybind11.full_object_detection, num_jitters: int = 0, padding: float = 0.25) -> _dlib_pybind11.vector
+    2. (self: _dlib_pybind11.face_recognition_model_v1, img: numpy.ndarray[(rows,cols,3),numpy.uint8], num_jitters: int = 0) -> _dlib_pybind11.vector
+    3. (self: _dlib_pybind11.face_recognition_model_v1, img: numpy.ndarray[(rows,cols,3),numpy.uint8], faces: _dlib_pybind11.full_object_detections, num_jitters: int = 0, padding: float = 0.25) -> _dlib_pybind11.vectors
+    4. (self: _dlib_pybind11.face_recognition_model_v1, batch_img: List[numpy.ndarray[(rows,cols,3),numpy.uint8]], batch_faces: List[_dlib_pybind11.full_object_detections], num_jitters: int = 0, padding: float = 0.25) -> _dlib_pybind11.vectorss
+    5. (self: _dlib_pybind11.face_recognition_model_v1, batch_img: List[numpy.ndarray[(rows,cols,3),numpy.uint8]], num_jitters: int = 0) -> _dlib_pybind11.vectors
+
+Invoked with: <_dlib_pybind11.face_recognition_model_v1 object at 0x000001DF180D37B0>, array([[[241, 240, 238],
+        [241, 239, 237],
+        [238, 236, 234],
+        ...,
+        [255, 255, 255],
+        [255, 255, 255],
+        [255, 255, 255]],
+
+       [[244, 243, 242],
+        [242, 241, 240],
+        [238, 236, 235],
+        ...,
+        [255, 255, 255],
+        [255, 255, 255],
+        [255, 255, 255]],
+
+       [[246, 244, 245],
+        [246, 244, 245],
+        [242, 240, 241],
+        ...,
+        [255, 255, 255],
+        [255, 255, 255],
+        [255, 255, 255]],
+
+       ...,
+
+       [[201, 202, 197],
+        [200, 201, 197],
+        [202, 202, 200],
+        ...,
+        [222, 222, 222],
+        [223, 223, 223],
+        [226, 226, 226]],
+
+       [[206, 207, 202],
+        [202, 203, 199],
+        [201, 201, 199],
+        ...,
+        [223, 223, 223],
+        [225, 225, 225],
+        [223, 223, 223]],
+
+       [[207, 208, 203],
+        [202, 203, 199],
+        [201, 201, 199],
+        ...,
+        [219, 219, 219],
+        [225, 225, 225],
+        [228, 228, 228]]], dtype=uint8), <_dlib_pybind11.full_object_detection object at 0x000001DF1A0C8730>, 1 [api.py:214 in <listcomp>()]
+2026-08-04 19:08:38 | INFO     | Database initialized (tables ready)
+2026-08-04 19:08:38 | INFO     | Face detector model loaded successfully
+2026-08-04 19:08:38 | INFO     | FaceEncoder initialized with 0 known person(s)
+2026-08-04 19:08:39 | INFO     | Press 'q' to quit the encoder test
