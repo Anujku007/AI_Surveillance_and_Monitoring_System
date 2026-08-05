@@ -16,6 +16,7 @@ Usage:
 
 import face_recognition
 import numpy as np
+import cv2
 
 from config import FACE_MATCH_TOLERANCE
 from error_handler import logger, error_context
@@ -91,7 +92,8 @@ class FaceEncoder:
                 "box": box,
                 "person": person,
                 "distance": distance,
-                "is_match": person is not None
+                "is_match": person is not None,
+                "encoding": encoding  # raw embedding, needed for unknown-face tracking
             })
 
         return results

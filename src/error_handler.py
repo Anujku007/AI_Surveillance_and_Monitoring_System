@@ -86,6 +86,10 @@ def safe_run(func):
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
+        except (KeyboardInterrupt, SystemExit):
+            # Never swallow interrupts/quit signals — let them propagate
+            # so 'q' / Ctrl+C reliably stop the program.
+            raise
         except Exception as e:
             log_exception(e, context=f"Error in {func.__name__}()")
             return None
@@ -108,7 +112,14 @@ class error_context:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if exc_val is not None:
-            log_exception(exc_val, context=self.context)
-            return True  # suppress the exception so the program keeps running
-        return False
+        if exc_val is None:
+            return False
+
+        # Never swallow KeyboardInterrupt (Ctrl+C) or SystemExit — these
+        # are not bugs, they're the user/OS asking the program to stop.
+        # Suppressing them would make quitting the program unreliable.
+        if isinstance(exc_val, (KeyboardInterrupt, SystemExit)):
+            return False
+
+        log_exception(exc_val, context=self.context)
+        return True  # suppress genuine errors so the program keeps running

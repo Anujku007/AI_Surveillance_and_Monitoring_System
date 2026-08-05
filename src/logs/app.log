@@ -73,3 +73,85 @@ Invoked with: <_dlib_pybind11.face_recognition_model_v1 object at 0x000001DF180D
 2026-08-04 19:08:38 | INFO     | Face detector model loaded successfully
 2026-08-04 19:08:38 | INFO     | FaceEncoder initialized with 0 known person(s)
 2026-08-04 19:08:39 | INFO     | Press 'q' to quit the encoder test
+2026-08-05 12:15:23 | INFO     | Database initialized (tables ready)
+2026-08-05 12:15:23 | INFO     | Face detector model loaded successfully
+2026-08-05 12:15:23 | INFO     | FaceEncoder initialized with 0 known person(s)
+2026-08-05 12:15:24 | INFO     | Press 'q' to quit the encoder test
+2026-08-05 12:27:41 | INFO     | Database initialized (tables ready)
+2026-08-05 12:28:00 | INFO     | Face detector model loaded successfully
+2026-08-05 12:28:25 | INFO     | Face detector model loaded successfully
+2026-08-05 12:28:25 | INFO     | FaceEncoder initialized with 0 known person(s)
+2026-08-05 12:28:25 | INFO     | Registered new person: Anuj kumar (ID: 01) -> person_id=1
+2026-08-05 12:30:06 | INFO     | Database initialized (tables ready)
+2026-08-05 12:30:06 | INFO     | Face detector model loaded successfully
+2026-08-05 12:30:06 | INFO     | FaceEncoder initialized with 1 known person(s)
+2026-08-05 12:30:07 | INFO     | Press 'q' to quit the encoder test
+2026-08-05 13:01:12 | INFO     | Starting AI Surveillance System...
+2026-08-05 13:01:12 | INFO     | Database initialized (tables ready)
+2026-08-05 13:01:12 | INFO     | Face detector model loaded successfully
+2026-08-05 13:01:12 | INFO     | FaceEncoder initialized with 1 known person(s)
+2026-08-05 13:01:13 | INFO     | Camera opened. Press 'q' to quit, 'r' to reload known faces from database.
+2026-08-05 13:01:14 | INFO     | Logged ENTRY for person_id=1 (log_id=1)
+2026-08-05 13:01:41 | INFO     | Logged EXIT for person_id=1 (log_id=2)
+2026-08-05 13:01:55 | INFO     | Logged ENTRY for person_id=1 (log_id=3)
+2026-08-05 13:01:56 | INFO     | Logged ENTRY for UNKNOWN person (log_id=4)
+2026-08-05 13:02:19 | INFO     | Logged EXIT for UNKNOWN person (log_id=5)
+2026-08-05 13:02:36 | INFO     | Logged EXIT for UNKNOWN person (log_id=6)
+2026-08-05 13:02:39 | INFO     | Quit key pressed. Shutting down...
+2026-08-05 13:02:39 | INFO     | Camera released. System stopped.
+2026-08-05 13:14:03 | INFO     | Database initialized (tables ready)
+2026-08-05 13:26:02 | INFO     | Database initialized (tables ready)
+2026-08-05 13:32:36 | INFO     | Database initialized (tables ready)
+2026-08-05 13:34:32 | INFO     | Database initialized (tables ready)
+2026-08-05 13:48:35 | INFO     | Starting AI Surveillance System...
+2026-08-05 13:48:35 | INFO     | Database initialized (tables ready)
+2026-08-05 13:48:35 | INFO     | Face detector model loaded successfully
+2026-08-05 13:48:35 | INFO     | FaceEncoder initialized with 1 known person(s)
+2026-08-05 13:48:36 | INFO     | Camera opened. Press 'q' to quit, 'r' to reload known faces from database.
+2026-08-05 13:48:37 | INFO     | Logged ENTRY for person_id=1 (log_id=7)
+2026-08-05 13:48:37 | INFO     | ENTRY: Anuj kumar
+2026-08-05 13:49:04 | ERROR    | Encoding detected faces | KeyboardInterrupt:  [api.py:214 in <listcomp>()]
+2026-08-05 13:49:04 | ERROR    | Error in process_frame() | TypeError: 'NoneType' object is not iterable [encoder.py:89 in recognize()]
+2026-08-05 13:49:15 | INFO     | Logged ENTRY for UNKNOWN person (log_id=8)
+2026-08-05 13:49:15 | INFO     | ENTRY: unknown (unknown_1)
+2026-08-05 13:49:34 | INFO     | Logged ENTRY for UNKNOWN person (log_id=9)
+2026-08-05 13:49:34 | INFO     | ENTRY: unknown (unknown_2)
+2026-08-05 13:49:34 | INFO     | Interrupted by user (Ctrl+C). Shutting down...
+2026-08-05 13:49:34 | INFO     | Camera released. System stopped.
+2026-08-05 13:49:58 | INFO     | Database initialized (tables ready)
+2026-08-05 13:50:44 | INFO     | Database initialized (tables ready)
+2026-08-05 13:56:59 | INFO     | Starting AI Surveillance System...
+2026-08-05 13:56:59 | INFO     | Database initialized (tables ready)
+2026-08-05 13:56:59 | INFO     | Face detector model loaded successfully
+2026-08-05 13:56:59 | INFO     | FaceEncoder initialized with 1 known person(s)
+2026-08-05 13:57:00 | INFO     | Camera opened. Press 'q' to quit, 'r' to reload known faces from database.
+2026-08-05 13:57:01 | INFO     | Logged ENTRY for person_id=1 (log_id=10)
+2026-08-05 13:57:01 | INFO     | ENTRY: Anuj kumar
+2026-08-05 13:57:18 | INFO     | Interrupted by user (Ctrl+C). Shutting down...
+2026-08-05 13:57:18 | INFO     | Camera released. System stopped.
+2026-08-05 13:57:28 | INFO     | Database initialized (tables ready)
+2026-08-05 14:06:48 | INFO     | Starting AI Surveillance System...
+2026-08-05 14:06:48 | INFO     | Database initialized (tables ready)
+2026-08-05 14:06:48 | INFO     | Face detector model loaded successfully
+2026-08-05 14:06:48 | INFO     | FaceEncoder initialized with 1 known person(s)
+2026-08-05 14:06:49 | INFO     | Camera opened. Press 'q' to quit, 'r' to reload known faces from database.
+2026-08-05 14:06:51 | INFO     | Logged ENTRY for person_id=1 (log_id=11)
+2026-08-05 14:06:51 | INFO     | ENTRY: Anuj kumar
+2026-08-05 14:07:15 | INFO     | Interrupted by user (Ctrl+C). Shutting down...
+2026-08-05 14:07:15 | INFO     | Camera released. System stopped.
+2026-08-05 14:09:30 | INFO     | Starting AI Surveillance System...
+2026-08-05 14:09:30 | INFO     | Database initialized (tables ready)
+2026-08-05 14:09:30 | INFO     | Face detector model loaded successfully
+2026-08-05 14:09:30 | INFO     | FaceEncoder initialized with 1 known person(s)
+2026-08-05 14:09:31 | INFO     | Camera opened. Press 'q' to quit, 'r' to reload known faces from database.
+2026-08-05 14:09:32 | INFO     | Logged ENTRY for person_id=1 (log_id=12)
+2026-08-05 14:09:32 | INFO     | ENTRY: Anuj kumar
+2026-08-05 14:10:30 | INFO     | Logged ENTRY for person_id=1 (log_id=13)
+2026-08-05 14:10:30 | INFO     | ENTRY: Anuj kumar
+2026-08-05 14:10:32 | INFO     | Logged ENTRY for UNKNOWN person (log_id=14)
+2026-08-05 14:10:32 | INFO     | ENTRY: unknown (unknown_1)
+2026-08-05 14:10:45 | INFO     | Logged EXIT for UNKNOWN person (log_id=15)
+2026-08-05 14:10:45 | INFO     | EXIT: unknown (unknown_1)
+2026-08-05 14:10:48 | INFO     | Interrupted by user (Ctrl+C). Shutting down...
+2026-08-05 14:10:48 | INFO     | Camera released. System stopped.
+2026-08-05 14:10:55 | INFO     | Database initialized (tables ready)

@@ -38,6 +38,16 @@ DETECTION_CONFIDENCE_THRESHOLD = 0.5
 # based on testing with your actual registered faces.
 FACE_MATCH_TOLERANCE = 0.6
 
+# Tolerance used ONLY to tell two unrecognized (unknown) faces apart from
+# each other across frames, so multiple strangers get separate temporary
+# tracking IDs instead of colliding into one shared "unknown" bucket.
+UNKNOWN_FACE_MATCH_TOLERANCE = 0.5
+
+# How long an unknown face's temporary tracking ID is kept alive after
+# they leave the frame, before it's discarded (if they return after this,
+# they'll be assigned a new temp ID — a known limitation, not a bug)
+UNKNOWN_ID_EXPIRY_SECONDS = 15
+
 # ---------------------------------------------------------
 # Camera settings
 # ---------------------------------------------------------
@@ -65,6 +75,12 @@ COLOR_UNKNOWN = (0, 0, 255)   # red (BGR) for unrecognized/suspicious person
 BOX_THICKNESS = 2
 FONT = "FONT_HERSHEY_SIMPLEX"
 FONT_SCALE = 0.6
+
+# ---------------------------------------------------------
+# Alert sound settings
+# ---------------------------------------------------------
+ENABLE_ALERT_SOUND = True
+ALERT_COOLDOWN_SECONDS = 5   # minimum gap between alert sounds, avoids spamming
 
 # ---------------------------------------------------------
 # Ensure required directories exist at import time
