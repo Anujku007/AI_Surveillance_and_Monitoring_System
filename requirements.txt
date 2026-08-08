@@ -1,3 +1,36 @@
+# AI-Based Intelligent Surveillance System — Python dependencies
+#
+# IMPORTANT: dlib must be installed via conda BEFORE installing this file,
+# since pip failed to build it from source on Windows (needs CMake +
+# Visual Studio Build Tools otherwise):
+#
+#     conda install -c conda-forge dlib
+#
+# Then install everything else with:
+#
+#     pip install -r requirements.txt
+
+# --- Core computer vision / face recognition ---
 opencv-python==4.10.0.84
 face_recognition==1.3.0
 numpy==1.26.4
+
+# face_recognition's model-data package must be installed from GitHub,
+# not PyPI (no --no-build-isolation needed once setuptools is pinned below):
+# pip install git+https://github.com/ageitgey/face_recognition_models
+
+# setuptools<81 is required because face_recognition_models still imports
+# the deprecated pkg_resources module, which newer setuptools removes.
+setuptools<81
+
+# --- GUI / imaging (Tkinter dashboard, thumbnails) ---
+pillow
+
+# --- PDF report generation ---
+reportlab
+
+# --- Encryption for stored face embeddings ---
+cryptography
+
+# --- Web front end ---
+flask

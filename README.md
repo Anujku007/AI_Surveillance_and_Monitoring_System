@@ -10,3 +10,13 @@ for encyption - pip install cryptography
 
 
 Password is stored as a salted PBKDF2-SHA256 hash (100,000 iterations)
+
+
+
+follow the process for install on new device
+
+conda create -n venv python=3.11
+conda activate venv
+conda install -c conda-forge dlib
+pip install -r requirements.txt
+pip install git+https://github.com/ageitgey/face_recognition_models
