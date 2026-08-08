@@ -11,8 +11,10 @@ Usage:
 """
 
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 import os
+import subprocess
+import platform
 from datetime import datetime
 
 try:
@@ -25,6 +27,91 @@ except ImportError:
 
 from database import init_db, get_all_logs
 from error_handler import logger
+from report_generator import generate_pdf_report
+from auth import is_password_set, set_password, verify_password
+
+MAX_LOGIN_ATTEMPTS = 5
+
+
+def show_login():
+    """
+    Shows a blocking login window before the dashboard opens.
+    On first run (no admin password set yet), prompts to create one instead.
+    Returns True if login succeeded, False if cancelled/locked out.
+    """
+    result = {"success": False}
+    attempts_left = [MAX_LOGIN_ATTEMPTS]
+    is_first_time = not is_password_set()
+
+    root = tk.Tk()
+    root.title("AI Surveillance System — Admin Login")
+    root.geometry("380x240")
+    root.resizable(False, False)
+
+    tk.Label(root, text="Admin Login", font=("Segoe UI", 14, "bold")).pack(pady=(20, 6))
+    if is_first_time:
+        tk.Label(root, text="First-time setup — create an admin password",
+                 font=("Segoe UI", 9), fg="#555").pack()
+
+    pw_var = tk.StringVar()
+    confirm_var = tk.StringVar()
+
+    tk.Label(root, text="Password:").pack(pady=(14, 0))
+    pw_entry = tk.Entry(root, textvariable=pw_var, show="*", width=30)
+    pw_entry.pack()
+    pw_entry.focus()
+
+    confirm_entry = None
+    if is_first_time:
+        tk.Label(root, text="Confirm Password:").pack(pady=(8, 0))
+        confirm_entry = tk.Entry(root, textvariable=confirm_var, show="*", width=30)
+        confirm_entry.pack()
+
+    error_label = tk.Label(root, text="", fg="#c0392b", font=("Segoe UI", 8))
+    error_label.pack(pady=(8, 0))
+
+    def attempt_login(event=None):
+        pw = pw_var.get()
+
+        if is_first_time:
+            confirm = confirm_var.get()
+            if len(pw) < 4:
+                error_label.config(text="Password must be at least 4 characters.")
+                return
+            if pw != confirm:
+                error_label.config(text="Passwords do not match.")
+                confirm_var.set("")
+                return
+            set_password(pw)
+            logger.info("Admin password created.")
+            result["success"] = True
+            root.destroy()
+            return
+
+        if verify_password(pw):
+            result["success"] = True
+            root.destroy()
+        else:
+            attempts_left[0] -= 1
+            if attempts_left[0] <= 0:
+                logger.warning("Too many failed login attempts. Locking out.")
+                error_label.config(text="Too many failed attempts. Closing.")
+                root.after(1500, root.destroy)
+            else:
+                error_label.config(text=f"Incorrect password. {attempts_left[0]} attempt(s) left.")
+                pw_var.set("")
+
+    pw_entry.bind("<Return>", attempt_login)
+    if confirm_entry:
+        confirm_entry.bind("<Return>", attempt_login)
+
+    btn_text = "Create Password & Login" if is_first_time else "Login"
+    tk.Button(root, text=btn_text, command=attempt_login,
+              bg="#2c6ed5", fg="white", width=22).pack(pady=14)
+
+    root.protocol("WM_DELETE_WINDOW", root.destroy)  # closing = cancel = not logged in
+    root.mainloop()
+    return result["success"]
 
 
 THUMBNAIL_SIZE = (220, 220)
@@ -127,6 +214,8 @@ class DashboardApp:
         top_bar.pack(fill="x")
         tk.Label(top_bar, text="Surveillance Logs", font=("Segoe UI", 14, "bold")).pack(side="left")
         tk.Button(top_bar, text="Refresh", command=self.refresh_logs).pack(side="right")
+        tk.Button(top_bar, text="Generate PDF Report", command=self.generate_report,
+                  bg="#2c6ed5", fg="white").pack(side="right", padx=(0, 8))
 
         body = tk.Frame(self.root)
         body.pack(fill="both", expand=True, padx=10, pady=(0, 10))
@@ -226,6 +315,36 @@ class DashboardApp:
         self._populate_events(logs)
         self._populate_sessions(logs)
         self.status_var.set(f"Loaded {len(logs)} events.")
+
+    def generate_report(self):
+        try:
+            self.status_var.set("Generating PDF report...")
+            self.root.update_idletasks()
+            path = generate_pdf_report()
+            self.status_var.set(f"Report saved: {path}")
+
+            answer = messagebox.askyesno(
+                "Report Generated",
+                f"PDF report saved to:\n{path}\n\nOpen it now?"
+            )
+            if answer:
+                self._open_file(path)
+        except Exception as e:
+            logger.error(f"Could not generate report: {e}")
+            messagebox.showerror("Error", f"Could not generate report:\n{e}")
+            self.status_var.set("Report generation failed.")
+
+    @staticmethod
+    def _open_file(path):
+        try:
+            if platform.system() == "Windows":
+                os.startfile(path)
+            elif platform.system() == "Darwin":
+                subprocess.run(["open", path])
+            else:
+                subprocess.run(["xdg-open", path])
+        except Exception as e:
+            logger.warning(f"Could not auto-open report file: {e}")
 
     def _populate_events(self, logs):
         for row in self.events_tree.get_children():
@@ -330,6 +449,10 @@ class DashboardApp:
 
 
 def main():
+    if not show_login():
+        logger.info("Login cancelled or failed. Dashboard not opened.")
+        return
+
     init_db()
     root = tk.Tk()
     app = DashboardApp(root)

@@ -15,7 +15,7 @@ import platform
 
 from config import (
     CAMERA_INDEX, PROCESS_EVERY_N_FRAMES,
-    COLOR_KNOWN, COLOR_UNKNOWN,
+    COLOR_KNOWN, COLOR_UNKNOWN, COLOR_SPOOF, COLOR_REPEAT,
     ENABLE_ALERT_SOUND, ALERT_COOLDOWN_SECONDS
 )
 from error_handler import logger, safe_run
@@ -72,11 +72,23 @@ def draw_results(frame, results):
     """Draws bounding boxes + labels for each detected face on the frame."""
     known_count = 0
     unknown_count = 0
+    spoof_count = 0
+    repeat_count = 0
 
     for r in results:
         top, right, bottom, left = r["box"]
 
-        if r["is_match"]:
+        if r.get("spoof_suspected"):
+            color = COLOR_SPOOF
+            name = r["person"]["name"] if r["is_match"] else "Unknown"
+            label = f"SPOOF SUSPECTED ({name})"
+            spoof_count += 1
+        elif r.get("repeat_offender"):
+            color = COLOR_REPEAT
+            count = r.get("sighting_count") or "?"
+            label = f"REPEAT VISITOR ({count}x seen)"
+            repeat_count += 1
+        elif r["is_match"]:
             color = COLOR_KNOWN
             label = f"{r['person']['name']} ({r['distance']:.2f})"
             known_count += 1
@@ -92,7 +104,7 @@ def draw_results(frame, results):
         cv2.putText(frame, label, (left + 5, bottom + 17),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
 
-    return frame, known_count, unknown_count
+    return frame, known_count, unknown_count, spoof_count, repeat_count
 
 
 @safe_run
@@ -156,12 +168,13 @@ def main():
                     last_results = results
                     tracker.update(results, frame)
 
-            display_frame, known_count, unknown_count = draw_results(frame.copy(), last_results)
+            display_frame, known_count, unknown_count, spoof_count, repeat_count = draw_results(frame.copy(), last_results)
             display_frame = draw_overlay_bar(display_frame, fps, len(last_results), known_count, unknown_count)
 
-            # Alert sound — only when at least one unrecognized face is on screen,
-            # respecting a cooldown so it doesn't beep on every single frame
-            if unknown_count > 0 and (now - last_alert_time) >= ALERT_COOLDOWN_SECONDS:
+            # Alert sound — for unrecognized, spoof-suspected, or repeat-offender
+            # faces, respecting a cooldown so it doesn't beep every single frame
+            if (unknown_count > 0 or spoof_count > 0 or repeat_count > 0) and \
+                    (now - last_alert_time) >= ALERT_COOLDOWN_SECONDS:
                 play_alert()
                 last_alert_time = now
 

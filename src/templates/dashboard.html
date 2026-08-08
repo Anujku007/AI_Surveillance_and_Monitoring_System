@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI Surveillance System</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-title">
+      <span class="logo">🛡</span>
+      <span>AI Surveillance System</span>
+    </div>
+    <div class="topbar-actions">
+      <button id="reportBtn" class="btn btn-accent">Generate PDF Report</button>
+      <a href="{{ url_for('logout') }}" class="btn btn-ghost">Logout</a>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="live">Live Monitoring</button>
+    <button class="tab-btn" data-tab="register">Register Person</button>
+    <button class="tab-btn" data-tab="events">All Events</button>
+    <button class="tab-btn" data-tab="sessions">Sessions</button>
+  </nav>
+
+  <main class="content">
+
+    <!-- LIVE MONITORING -->
+    <section id="tab-live" class="tab-panel active">
+      <div class="panel-grid">
+        <div class="video-column">
+          <div class="video-frame">
+            <img id="liveVideo" class="video-img" alt="Live camera feed">
+            <div id="liveVideoPlaceholder" class="video-placeholder">Camera feed will appear here</div>
+          </div>
+          <div class="controls-row">
+            <button id="liveStartBtn" class="btn btn-success">Start Monitoring</button>
+            <button id="liveStopBtn" class="btn btn-danger" disabled>Stop Monitoring</button>
+          </div>
+        </div>
+        <div class="stats-column">
+          <h3>Live Stats</h3>
+          <div class="stat-row"><span>Status</span><span id="statStatus" class="badge badge-off">Stopped</span></div>
+          <div class="stat-row"><span>FPS</span><span id="statFps">–</span></div>
+          <div class="stat-row"><span>Faces in frame</span><span id="statFaces">–</span></div>
+          <div class="stat-row"><span class="dot dot-green"></span><span>Known</span><span id="statKnown">0</span></div>
+          <div class="stat-row"><span class="dot dot-red"></span><span>Unknown</span><span id="statUnknown">0</span></div>
+          <div class="stat-row"><span class="dot dot-orange"></span><span>Spoof Suspected</span><span id="statSpoof">0</span></div>
+          <div class="stat-row"><span class="dot dot-magenta"></span><span>Repeat Visitor</span><span id="statRepeat">0</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REGISTER PERSON -->
+    <section id="tab-register" class="tab-panel">
+      <div class="panel-grid">
+        <div class="video-column">
+          <div class="video-frame">
+            <img id="regVideo" class="video-img" alt="Registration camera preview">
+            <div id="regVideoPlaceholder" class="video-placeholder">Registration camera preview</div>
+          </div>
+          <div class="controls-row">
+            <button id="regStartBtn" class="btn btn-accent">Start Camera Preview</button>
+            <button id="regCaptureBtn" class="btn btn-success" disabled>Capture &amp; Register</button>
+            <button id="regStopBtn" class="btn btn-danger" disabled>Stop Preview</button>
+          </div>
+          <div id="regStatus" class="status-line">Camera not started</div>
+        </div>
+        <div class="stats-column">
+          <h3>Register New Person</h3>
+          <form id="registerForm">
+            <label>Name</label>
+            <input type="text" id="regName" required>
+            <label>ID / Roll No.</label>
+            <input type="text" id="regId" required>
+            <label>Organization</label>
+            <input type="text" id="regOrg">
+          </form>
+          <p class="hint">Fill the form, start the camera, wait for a green box around your face, then capture.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ALL EVENTS -->
+    <section id="tab-events" class="tab-panel">
+      <div class="table-layout">
+        <div class="table-wrap">
+          <table id="eventsTable" class="log-table">
+            <thead>
+              <tr><th>Log ID</th><th>Name</th><th>ID No.</th><th>Event</th><th>Timestamp</th><th>Location</th><th>Status</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="snapshot-panel">
+          <h3>Snapshot</h3>
+          <img id="eventsSnapshot" class="snapshot-img" alt="">
+          <div id="eventsDetail" class="snapshot-detail">Select a row to view details</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SESSIONS -->
+    <section id="tab-sessions" class="tab-panel">
+      <div class="table-layout">
+        <div class="table-wrap">
+          <table id="sessionsTable" class="log-table">
+            <thead>
+              <tr><th>Log ID</th><th>Name</th><th>ID No.</th><th>Entry Time</th><th>Exit Time</th><th>Duration</th><th>Location</th><th>Status</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="snapshot-panel">
+          <h3>Snapshot</h3>
+          <img id="sessionsSnapshot" class="snapshot-img" alt="">
+          <div id="sessionsDetail" class="snapshot-detail">Select a row to view details</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="statusbar" id="statusBar">Ready</footer>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

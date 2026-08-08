@@ -71,29 +71,45 @@ class FaceEncoder:
 
         return None, float(best_distance)
 
+    def get_landmarks(self, frame, boxes):
+        """
+        Extracts facial landmarks (eyes, nose, mouth, etc.) for each detected
+        face — used for liveness/blink detection, not for identity matching.
+        Returns a list of landmark dicts, same order as boxes. Each dict has
+        keys like 'left_eye' and 'right_eye', each a list of 6 (x, y) points.
+        """
+        with error_context("Extracting facial landmarks"):
+            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            return face_recognition.face_landmarks(rgb_frame, boxes)
+
     def recognize(self, frame, boxes):
         """
-        Full pipeline: encode each detected face and match it against known persons.
+        Full pipeline: encode each detected face, match it against known
+        persons, and extract landmarks for liveness checking.
 
         Returns a list of dicts, one per face:
             {
                 "box": (top, right, bottom, left),
                 "person": person_dict or None,   # None = unknown/unregistered
                 "distance": float or None,
-                "is_match": bool
+                "is_match": bool,
+                "encoding": np.array,             # raw 128-d embedding
+                "landmarks": dict or None         # eye points for liveness check
             }
         """
         results = []
         encodings = self.encode_faces(frame, boxes)
+        landmarks_list = self.get_landmarks(frame, boxes)
 
-        for box, encoding in zip(boxes, encodings):
+        for box, encoding, landmarks in zip(boxes, encodings, landmarks_list):
             person, distance = self.match_encoding(encoding)
             results.append({
                 "box": box,
                 "person": person,
                 "distance": distance,
                 "is_match": person is not None,
-                "encoding": encoding  # raw embedding, needed for unknown-face tracking
+                "encoding": encoding,
+                "landmarks": landmarks
             })
 
         return results

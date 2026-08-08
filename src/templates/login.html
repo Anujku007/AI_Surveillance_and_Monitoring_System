@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI Surveillance System — Login</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="login-body">
+  <div class="login-card">
+    <div class="login-icon">🛡</div>
+    <h1>AI Surveillance System</h1>
+    <p class="login-subtitle">
+      {% if first_time %}First-time setup — create an admin password{% else %}Admin Login{% endif %}
+    </p>
+
+    <form method="POST" class="login-form">
+      <label>Password</label>
+      <input type="password" name="password" autofocus required>
+
+      {% if first_time %}
+      <label>Confirm Password</label>
+      <input type="password" name="confirm" required>
+      {% endif %}
+
+      {% if error %}
+      <div class="login-error">{{ error }}</div>
+      {% endif %}
+
+      <button type="submit">{% if first_time %}Create Password & Login{% else %}Login{% endif %}</button>
+    </form>
+  </div>
+</body>
+</html>
