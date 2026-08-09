@@ -6,6 +6,7 @@ Keep all tunable values here so they can be adjusted in one place
 """
 
 import os
+import json
 
 # ---------------------------------------------------------
 # Base paths
@@ -24,6 +25,19 @@ DB_PATH = os.path.join(DATABASE_DIR, "surveillance.db")
 # first run if it doesn't exist — see crypto.py. Keep this file private;
 # anyone with it can decrypt stored face data. Do not commit it to git.
 ENCRYPTION_KEY_PATH = os.path.join(DATABASE_DIR, "secret.key")
+
+# ---------------------------------------------------------
+# Email alerts
+# ---------------------------------------------------------
+# Credentials live in a separate JSON file (NOT this file), same pattern
+# as secret.key — so real credentials never end up in source control or
+# get pasted into a report. See alerts.py for the setup helper.
+EMAIL_CONFIG_PATH = os.path.join(DATABASE_DIR, "email_config.json")
+
+# Minimum gap between two alert emails, regardless of how many suspicious
+# events occur — protects against flooding your inbox during testing or
+# a burst of detections.
+EMAIL_ALERT_COOLDOWN_SECONDS = 30
 
 # ---------------------------------------------------------
 # DNN face detector model files (OpenCV)
@@ -79,6 +93,20 @@ FRAME_HEIGHT = 480
 PROCESS_EVERY_N_FRAMES = 3   # skip frames to keep real-time performance
 
 # ---------------------------------------------------------
+# Multi-camera support
+# ---------------------------------------------------------
+# Each entry: id (used internally/in URLs), name (shown in UI and saved as
+# camera_location in logs), source (int index for a local webcam, or a URL
+# string for an IP camera / phone camera app, e.g. the Android "IP Webcam"
+# app's MJPEG URL). cv2.VideoCapture() accepts both transparently.
+CAMERAS = [
+    {"id": "cam1", "name": "Main Entrance", "source": CAMERA_INDEX},
+    # Add more cameras here, for example a phone running the "IP Webcam"
+    # Android app on the same network:
+    # {"id": "cam2", "name": "Back Entrance", "source": "http://192.168.1.5:8080/video"},
+]
+
+# ---------------------------------------------------------
 # Entry/Exit tracking logic
 # ---------------------------------------------------------
 # How many seconds a person must be absent from frame before
@@ -90,12 +118,22 @@ EXIT_TIMEOUT_SECONDS = 5
 LOG_COOLDOWN_SECONDS = 10
 
 # ---------------------------------------------------------
+# Confidence-based re-verification
+# ---------------------------------------------------------
+# Instead of logging ENTRY the instant a face is first seen, require the
+# same identity decision (matched to person X, or unmatched) to repeat for
+# this many consecutive PROCESSED frames first. Prevents a single noisy/
+# bad-angle frame from triggering a premature or incorrect log entry.
+CONFIDENCE_MIN_FRAMES = 3
+
+# ---------------------------------------------------------
 # Display settings
 # ---------------------------------------------------------
 COLOR_KNOWN = (0, 255, 0)     # green (BGR) for recognized/authorized person
 COLOR_UNKNOWN = (0, 0, 255)   # red (BGR) for unrecognized/suspicious person
 COLOR_SPOOF = (0, 140, 255)   # orange (BGR) for suspected photo/video spoof
 COLOR_REPEAT = (255, 0, 200)  # magenta (BGR) for repeat-offender unknown visitor
+COLOR_VERIFYING = (180, 180, 180)  # gray (BGR) — identity not yet confirmed
 BOX_THICKNESS = 2
 FONT = "FONT_HERSHEY_SIMPLEX"
 FONT_SCALE = 0.6
@@ -130,3 +168,72 @@ LIVENESS_TIMEOUT_SECONDS = 8
 # ---------------------------------------------------------
 for directory in (MODELS_DIR, DATABASE_DIR, KNOWN_FACES_DIR, LOGS_DIR, SNAPSHOTS_DIR):
     os.makedirs(directory, exist_ok=True)
+
+# ---------------------------------------------------------
+# Runtime-configurable settings (settings.json overrides)
+# ---------------------------------------------------------
+# Lets the Settings tab in the web app tune these values without editing
+# this file directly. Changes are saved to settings.json and take effect
+# on the NEXT restart (values below are already imported by other modules
+# at import time, so this is not a live/hot-reload).
+SETTINGS_PATH = os.path.join(DATABASE_DIR, "settings.json")
+
+EDITABLE_SETTINGS_KEYS = [
+    "CAMERAS",
+    "DETECTION_CONFIDENCE_THRESHOLD",
+    "FACE_MATCH_TOLERANCE",
+    "PROCESS_EVERY_N_FRAMES",
+    "EXIT_TIMEOUT_SECONDS",
+    "LOG_COOLDOWN_SECONDS",
+    "CONFIDENCE_MIN_FRAMES",
+    "ENABLE_LIVENESS_CHECK",
+    "LIVENESS_EAR_THRESHOLD",
+    "LIVENESS_TIMEOUT_SECONDS",
+    "REPEAT_OFFENDER_THRESHOLD",
+    "ENABLE_ALERT_SOUND",
+    "ALERT_COOLDOWN_SECONDS",
+    "EMAIL_ALERT_COOLDOWN_SECONDS",
+]
+
+
+def _load_settings_overrides():
+    if not os.path.exists(SETTINGS_PATH):
+        return
+    try:
+        with open(SETTINGS_PATH) as f:
+            overrides = json.load(f)
+        for key, value in overrides.items():
+            if key in EDITABLE_SETTINGS_KEYS:
+                globals()[key] = value
+    except Exception as e:
+        print(f"Warning: could not load settings.json overrides: {e}")
+
+
+_load_settings_overrides()
+
+
+def get_current_settings():
+    """Returns current values of all editable settings — for the Settings UI."""
+    return {key: globals()[key] for key in EDITABLE_SETTINGS_KEYS}
+
+
+def save_settings(new_values):
+    """
+    Persists the given key/value pairs to settings.json (merged with any
+    existing overrides). Only keys in EDITABLE_SETTINGS_KEYS are accepted.
+    Takes effect on the next app restart.
+    """
+    current = {}
+    if os.path.exists(SETTINGS_PATH):
+        try:
+            with open(SETTINGS_PATH) as f:
+                current = json.load(f)
+        except Exception:
+            current = {}
+
+    for key, value in new_values.items():
+        if key in EDITABLE_SETTINGS_KEYS:
+            current[key] = value
+
+    with open(SETTINGS_PATH, "w") as f:
+        json.dump(current, f, indent=2)

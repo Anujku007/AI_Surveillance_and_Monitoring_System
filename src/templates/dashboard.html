@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>AI Surveillance System</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 </head>
 <body>
   <header class="topbar">
@@ -22,34 +23,15 @@
     <button class="tab-btn" data-tab="register">Register Person</button>
     <button class="tab-btn" data-tab="events">All Events</button>
     <button class="tab-btn" data-tab="sessions">Sessions</button>
+    <button class="tab-btn" data-tab="analytics">Analytics</button>
+    <button class="tab-btn" data-tab="settings">Settings</button>
   </nav>
 
   <main class="content">
 
     <!-- LIVE MONITORING -->
     <section id="tab-live" class="tab-panel active">
-      <div class="panel-grid">
-        <div class="video-column">
-          <div class="video-frame">
-            <img id="liveVideo" class="video-img" alt="Live camera feed">
-            <div id="liveVideoPlaceholder" class="video-placeholder">Camera feed will appear here</div>
-          </div>
-          <div class="controls-row">
-            <button id="liveStartBtn" class="btn btn-success">Start Monitoring</button>
-            <button id="liveStopBtn" class="btn btn-danger" disabled>Stop Monitoring</button>
-          </div>
-        </div>
-        <div class="stats-column">
-          <h3>Live Stats</h3>
-          <div class="stat-row"><span>Status</span><span id="statStatus" class="badge badge-off">Stopped</span></div>
-          <div class="stat-row"><span>FPS</span><span id="statFps">–</span></div>
-          <div class="stat-row"><span>Faces in frame</span><span id="statFaces">–</span></div>
-          <div class="stat-row"><span class="dot dot-green"></span><span>Known</span><span id="statKnown">0</span></div>
-          <div class="stat-row"><span class="dot dot-red"></span><span>Unknown</span><span id="statUnknown">0</span></div>
-          <div class="stat-row"><span class="dot dot-orange"></span><span>Spoof Suspected</span><span id="statSpoof">0</span></div>
-          <div class="stat-row"><span class="dot dot-magenta"></span><span>Repeat Visitor</span><span id="statRepeat">0</span></div>
-        </div>
-      </div>
+      <div id="cameraGrid" class="camera-grid"></div>
     </section>
 
     <!-- REGISTER PERSON -->
@@ -121,6 +103,86 @@
     </section>
 
   </main>
+
+  <!-- ANALYTICS -->
+  <section id="tab-analytics" class="tab-panel content">
+    <div class="analytics-grid">
+      <div class="chart-card">
+        <h3>Entries Per Day</h3>
+        <canvas id="chartEntriesPerDay"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>Peak Hours</h3>
+        <canvas id="chartPeakHours"></canvas>
+      </div>
+      <div class="chart-card chart-card-small">
+        <h3>Authorized vs Suspicious</h3>
+        <canvas id="chartAuthVsSusp"></canvas>
+      </div>
+      <div class="chart-card chart-card-small">
+        <h3>Suspicious Reason Breakdown</h3>
+        <canvas id="chartReasons"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>Top Visitors (Authorized)</h3>
+        <canvas id="chartTopVisitors"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="tab-settings" class="tab-panel content">
+    <div class="settings-wrap">
+      <div class="settings-card">
+        <h3>Cameras</h3>
+        <div id="cameraSettingsList"></div>
+        <button id="addCameraBtn" class="btn btn-ghost" type="button">+ Add Camera</button>
+      </div>
+
+      <div class="settings-card">
+        <h3>Detection & Recognition</h3>
+        <label>Detection Confidence Threshold (0–1)</label>
+        <input type="number" id="setDetectionConfidence" step="0.05" min="0" max="1">
+        <label>Face Match Tolerance (lower = stricter, 0–1)</label>
+        <input type="number" id="setFaceMatchTolerance" step="0.01" min="0" max="1">
+        <label>Process Every N Frames</label>
+        <input type="number" id="setProcessEveryN" step="1" min="1">
+        <label>Frames Required to Confirm Identity</label>
+        <input type="number" id="setConfidenceMinFrames" step="1" min="1">
+      </div>
+
+      <div class="settings-card">
+        <h3>Entry / Exit Tracking</h3>
+        <label>Exit Timeout (seconds)</label>
+        <input type="number" id="setExitTimeout" step="1" min="1">
+        <label>Log Cooldown (seconds)</label>
+        <input type="number" id="setLogCooldown" step="1" min="1">
+        <label>Repeat Offender Threshold (sightings)</label>
+        <input type="number" id="setRepeatThreshold" step="1" min="2">
+      </div>
+
+      <div class="settings-card">
+        <h3>Liveness (Anti-Spoofing)</h3>
+        <label class="checkbox-label"><input type="checkbox" id="setLivenessEnabled"> Enabled</label>
+        <label>EAR Threshold</label>
+        <input type="number" id="setEarThreshold" step="0.01" min="0" max="1">
+        <label>Spoof Timeout (seconds)</label>
+        <input type="number" id="setLivenessTimeout" step="1" min="1">
+      </div>
+
+      <div class="settings-card">
+        <h3>Alerts</h3>
+        <label class="checkbox-label"><input type="checkbox" id="setSoundEnabled"> Sound alert enabled</label>
+        <label>Sound Alert Cooldown (seconds)</label>
+        <input type="number" id="setAlertCooldown" step="1" min="1">
+        <label>Email Alert Cooldown (seconds)</label>
+        <input type="number" id="setEmailCooldown" step="1" min="1">
+      </div>
+
+      <button id="saveSettingsBtn" class="btn btn-accent">Save Settings</button>
+      <p id="settingsMsg" class="hint"></p>
+    </div>
+  </section>
 
   <footer class="statusbar" id="statusBar">Ready</footer>
 

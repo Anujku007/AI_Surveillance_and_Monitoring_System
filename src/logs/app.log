@@ -79,3 +79,51 @@
 2026-08-08 13:13:00 | INFO     | Live feed stopped.
 2026-08-08 13:13:06 | INFO     | Database initialized (tables ready)
 2026-08-08 13:13:06 | INFO     | PDF report generated: D:\AI-Surveillance System\src\logs\reports\surveillance_report_20260808_131306.pdf
+2026-08-09 15:29:49 | INFO     | Email alert configuration saved.
+2026-08-09 15:29:53 | INFO     | Alert email sent: Test Alert
+2026-08-09 15:32:37 | INFO     | Starting AI Surveillance System...
+2026-08-09 15:32:37 | INFO     | Database initialized (tables ready)
+2026-08-09 15:32:37 | INFO     | Face detector model loaded successfully
+2026-08-09 15:32:37 | WARNING  | Skipping person_id=1 (Anuj kumar): Could not decrypt stored data — this usually means the encryption key changed, or this record predates encryption being enabled. Affected persons/entries need to be re-registered.
+2026-08-09 15:32:37 | INFO     | FaceEncoder initialized with 1 known person(s)
+2026-08-09 15:32:39 | INFO     | Camera opened. Press 'q' to quit, 'r' to reload known faces from database.
+2026-08-09 15:32:40 | INFO     | Logged ENTRY for person_id=2 (log_id=32)
+2026-08-09 15:32:40 | INFO     | ENTRY: Anuj Yadav
+2026-08-09 15:32:42 | INFO     | Logged ENTRY for UNKNOWN person (log_id=33)
+2026-08-09 15:32:42 | INFO     | ENTRY: unknown (unknown_1)
+2026-08-09 15:32:47 | INFO     | Alert email sent: Unknown Person Detected
+2026-08-09 15:32:53 | INFO     | Quit key pressed. Shutting down...
+2026-08-09 15:32:53 | INFO     | Camera released. System stopped.
+2026-08-09 15:45:18 | INFO     | Database initialized (tables ready)
+2026-08-09 15:45:18 | INFO     | FaceEncoder initialized with 0 known person(s)
+2026-08-09 15:45:18 | INFO     | Starting web app at http://127.0.0.1:5000
+2026-08-09 15:46:11 | INFO     | Face detector model loaded successfully
+2026-08-09 15:46:11 | WARNING  | Skipping person_id=1 (Anuj kumar): Could not decrypt stored data — this usually means the encryption key changed, or this record predates encryption being enabled. Affected persons/entries need to be re-registered.
+2026-08-09 15:46:11 | INFO     | FaceEncoder initialized with 1 known person(s)
+2026-08-09 15:46:13 | INFO     | Live feed started: Main Entrance
+2026-08-09 15:46:14 | INFO     | Logged ENTRY for person_id=2 (log_id=34)
+2026-08-09 15:46:14 | INFO     | ENTRY: Anuj Yadav
+2026-08-09 15:46:44 | INFO     | Live feed stopped: Main Entrance
+2026-08-09 15:59:34 | INFO     | Database initialized (tables ready)
+2026-08-09 15:59:34 | INFO     | FaceEncoder initialized with 0 known person(s)
+2026-08-09 15:59:34 | INFO     | Starting web app at http://127.0.0.1:5000
+2026-08-09 16:00:02 | INFO     | Face detector model loaded successfully
+2026-08-09 16:00:02 | WARNING  | Skipping person_id=1 (Anuj kumar): Could not decrypt stored data — this usually means the encryption key changed, or this record predates encryption being enabled. Affected persons/entries need to be re-registered.
+2026-08-09 16:00:02 | INFO     | FaceEncoder initialized with 1 known person(s)
+2026-08-09 16:00:04 | INFO     | Live feed started: Main Entrance
+2026-08-09 16:00:07 | INFO     | Logged ENTRY for person_id=2 (log_id=35)
+2026-08-09 16:00:07 | INFO     | ENTRY: Anuj Yadav
+2026-08-09 16:00:59 | INFO     | Logged ENTRY for UNKNOWN person (log_id=36)
+2026-08-09 16:00:59 | INFO     | ENTRY: unknown (unknown_3)
+2026-08-09 16:01:03 | INFO     | Logged EXIT for person_id=2 (log_id=37)
+2026-08-09 16:01:03 | INFO     | EXIT: Anuj Yadav
+2026-08-09 16:01:06 | INFO     | Alert email sent: Unknown Person Detected
+2026-08-09 16:01:11 | INFO     | Logged EXIT for UNKNOWN person (log_id=38)
+2026-08-09 16:01:11 | INFO     | EXIT: unknown (unknown_3)
+2026-08-09 16:01:13 | INFO     | Live feed stopped: Main Entrance
+2026-08-09 16:09:35 | INFO     | Database initialized (tables ready)
+2026-08-09 16:09:35 | INFO     | FaceEncoder initialized with 0 known person(s)
+2026-08-09 16:09:35 | INFO     | Starting web app at http://127.0.0.1:5000
+2026-08-09 16:15:38 | INFO     | Database initialized (tables ready)
+2026-08-09 16:15:38 | INFO     | FaceEncoder initialized with 0 known person(s)
+2026-08-09 16:15:38 | INFO     | Starting web app at http://127.0.0.1:5000

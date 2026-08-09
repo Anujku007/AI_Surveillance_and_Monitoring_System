@@ -41,11 +41,13 @@ import numpy as np
 from config import (
     EXIT_TIMEOUT_SECONDS, LOG_COOLDOWN_SECONDS, SNAPSHOTS_DIR,
     UNKNOWN_FACE_MATCH_TOLERANCE, UNKNOWN_ID_EXPIRY_SECONDS,
-    ENABLE_LIVENESS_CHECK, REPEAT_OFFENDER_MATCH_TOLERANCE, REPEAT_OFFENDER_THRESHOLD
+    ENABLE_LIVENESS_CHECK, REPEAT_OFFENDER_MATCH_TOLERANCE, REPEAT_OFFENDER_THRESHOLD,
+    CONFIDENCE_MIN_FRAMES
 )
 from error_handler import logger, error_context
 from database import log_event, match_or_add_watchlist
 from liveness import LivenessChecker
+from alerts import send_alert_email_async
 
 
 class UnknownFaceRegistry:
@@ -84,12 +86,13 @@ class UnknownFaceRegistry:
 
 
 class EntryExitTracker:
-    def __init__(self):
+    def __init__(self, camera_location="Main Entrance"):
         # key -> {"present": bool, "last_seen": ts, "last_log_time": ts,
         #         "person": dict or None, "repeat_offender": bool, "sighting_count": int}
         self.state = {}
         self.unknown_registry = UnknownFaceRegistry()
         self.liveness = LivenessChecker()
+        self.camera_location = camera_location
 
     def _key_for(self, result, now):
         person = result["person"]
@@ -100,7 +103,8 @@ class EntryExitTracker:
     def _save_snapshot(self, frame, key):
         try:
             timestamp = time.strftime("%Y%m%d_%H%M%S")
-            filename = f"{key}_{timestamp}.jpg"
+            safe_location = self.camera_location.replace(" ", "_").lower()
+            filename = f"{safe_location}_{key}_{timestamp}.jpg"
             path = os.path.join(SNAPSHOTS_DIR, filename)
             cv2.imwrite(path, frame)
             return path
@@ -154,10 +158,14 @@ class EntryExitTracker:
             log_event(
                 person_id=person_id,
                 event_type=event_type,
+                camera_location=self.camera_location,
                 snapshot_path=snapshot_path,
                 is_suspicious=is_suspicious,
                 reason=reason
             )
+
+            if event_type == "ENTRY" and is_suspicious:
+                self._send_alert(reason, person, key, sighting_count, snapshot_path)
 
             if spoof_suspected and person is not None:
                 who = f"{person['name']} — SPOOF SUSPECTED (no blink detected)"
@@ -166,6 +174,23 @@ class EntryExitTracker:
             else:
                 who = person["name"] if person else f"unknown ({key})"
             logger.info(f"{event_type}: {who}")
+
+    def _send_alert(self, reason, person, key, sighting_count, snapshot_path):
+        if reason == "spoof_suspected":
+            name = person["name"] if person else "an unregistered face"
+            subject = "Spoof Attempt Detected"
+            body = (f"A face matching '{name}' was detected but did not blink within the "
+                    f"liveness timeout — likely a photo/video held up to the camera.\n\n"
+                    f"Tracking key: {key}")
+        elif reason == "repeat_offender":
+            subject = "Repeat Unregistered Visitor"
+            body = (f"An unregistered person has now been sighted {sighting_count} separate "
+                    f"time(s) — escalated to repeat offender.\n\nTracking key: {key}")
+        else:
+            subject = "Unknown Person Detected"
+            body = f"An unrecognized person was detected.\n\nTracking key: {key}"
+
+        send_alert_email_async(subject, body, snapshot_path)
 
     def update(self, results, frame=None):
         """
@@ -197,17 +222,26 @@ class EntryExitTracker:
                 "person": person,
                 "repeat_offender": False,
                 "sighting_count": None,
+                "pending_frames": 0,
             })
             st["last_seen"] = now
             st["person"] = person
 
             if not st["present"]:
-                if now - st["last_log_time"] >= LOG_COOLDOWN_SECONDS:
-                    self._log(key, person, "ENTRY", frame,
-                              spoof_suspected=r["spoof_suspected"],
-                              encoding=r.get("encoding"))
-                    st["last_log_time"] = now
-                st["present"] = True
+                # Require CONFIDENCE_MIN_FRAMES consecutive agreeing frames
+                # before committing to ENTRY — filters out a single noisy
+                # detection flipping the identity decision.
+                st["pending_frames"] += 1
+                if st["pending_frames"] >= CONFIDENCE_MIN_FRAMES:
+                    if now - st["last_log_time"] >= LOG_COOLDOWN_SECONDS:
+                        self._log(key, person, "ENTRY", frame,
+                                  spoof_suspected=r["spoof_suspected"],
+                                  encoding=r.get("encoding"))
+                        st["last_log_time"] = now
+                    st["present"] = True
+                    st["pending_frames"] = 0
+
+            r["confirmed"] = st["present"]
 
             # Reflect this key's watchlist status on the result every frame
             # (not just the ENTRY frame), so the live display stays consistent

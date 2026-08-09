@@ -15,7 +15,7 @@ import platform
 
 from config import (
     CAMERA_INDEX, PROCESS_EVERY_N_FRAMES,
-    COLOR_KNOWN, COLOR_UNKNOWN, COLOR_SPOOF, COLOR_REPEAT,
+    COLOR_KNOWN, COLOR_UNKNOWN, COLOR_SPOOF, COLOR_REPEAT, COLOR_VERIFYING,
     ENABLE_ALERT_SOUND, ALERT_COOLDOWN_SECONDS
 )
 from error_handler import logger, safe_run
@@ -83,6 +83,9 @@ def draw_results(frame, results):
             name = r["person"]["name"] if r["is_match"] else "Unknown"
             label = f"SPOOF SUSPECTED ({name})"
             spoof_count += 1
+        elif not r.get("confirmed", True):
+            color = COLOR_VERIFYING
+            label = "Verifying..."
         elif r.get("repeat_offender"):
             color = COLOR_REPEAT
             count = r.get("sighting_count") or "?"

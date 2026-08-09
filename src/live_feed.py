@@ -29,7 +29,10 @@ from main import draw_results, draw_overlay_bar, play_alert
 
 
 class LiveFeedController:
-    def __init__(self):
+    def __init__(self, camera_source=None, camera_name="Main Entrance"):
+        self.camera_source = camera_source if camera_source is not None else CAMERA_INDEX
+        self.camera_name = camera_name
+
         self.detector = None
         self.encoder = None
         self.tracker = None
@@ -51,22 +54,22 @@ class LiveFeedController:
         try:
             self.detector = FaceDetector()
         except Exception as e:
-            logger.error(f"Could not start live feed — model load failed: {e}")
+            logger.error(f"Could not start live feed ({self.camera_name}) — model load failed: {e}")
             return False
 
         self.encoder = FaceEncoder(get_all_persons())
-        self.tracker = EntryExitTracker()
+        self.tracker = EntryExitTracker(camera_location=self.camera_name)
 
-        self.cap = cv2.VideoCapture(CAMERA_INDEX)
+        self.cap = cv2.VideoCapture(self.camera_source)
         if not self.cap.isOpened():
-            logger.error("Could not open webcam for live feed.")
+            logger.error(f"Could not open camera '{self.camera_name}' (source={self.camera_source}).")
             self.cap = None
             return False
 
         self.running = True
         self.thread = threading.Thread(target=self._loop, daemon=True)
         self.thread.start()
-        logger.info("Live feed started.")
+        logger.info(f"Live feed started: {self.camera_name}")
         return True
 
     def stop(self):
@@ -80,7 +83,7 @@ class LiveFeedController:
             self.cap = None
         with self._lock:
             self._latest_frame = None
-        logger.info("Live feed stopped.")
+        logger.info(f"Live feed stopped: {self.camera_name}")
 
     def refresh_known_persons(self):
         """Call after registering a new person so recognition picks them up immediately."""

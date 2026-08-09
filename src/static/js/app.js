@@ -8,61 +8,93 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
 
     if (btn.dataset.tab === "events") loadEvents();
     if (btn.dataset.tab === "sessions") loadSessions();
+    if (btn.dataset.tab === "analytics") loadAnalytics();
+    if (btn.dataset.tab === "settings") loadSettings();
   });
 });
 
 const statusBar = document.getElementById("statusBar");
 function setStatus(text) { statusBar.textContent = text; }
 
-// ---------- Live Monitoring ----------
-const liveVideo = document.getElementById("liveVideo");
-const liveVideoPlaceholder = document.getElementById("liveVideoPlaceholder");
-const liveStartBtn = document.getElementById("liveStartBtn");
-const liveStopBtn = document.getElementById("liveStopBtn");
-let liveStatsTimer = null;
+// ---------- Live Monitoring (multi-camera) ----------
+const cameraGrid = document.getElementById("cameraGrid");
+const cameraState = {}; // camera_id -> { statsTimer }
 
-liveStartBtn.addEventListener("click", async () => {
-  const res = await fetch("/api/live/start", { method: "POST" });
+async function initCameras() {
+  const res = await fetch("/api/cameras");
+  const cameras = await res.json();
+
+  cameras.forEach(cam => {
+    const card = document.createElement("div");
+    card.className = "camera-card";
+    card.innerHTML = `
+      <h4>${cam.name}</h4>
+      <div class="video-frame">
+        <img id="video-${cam.id}" class="video-img" alt="${cam.name} feed">
+        <div id="placeholder-${cam.id}" class="video-placeholder">Camera feed will appear here</div>
+      </div>
+      <div class="controls-row">
+        <button id="start-${cam.id}" class="btn btn-success">Start</button>
+        <button id="stop-${cam.id}" class="btn btn-danger" disabled>Stop</button>
+        <span id="badge-${cam.id}" class="badge badge-off" style="margin-left:auto;">Stopped</span>
+      </div>
+      <div class="stat-row"><span>FPS</span><span id="fps-${cam.id}">–</span></div>
+      <div class="stat-row"><span class="dot dot-green"></span><span>Known</span><span id="known-${cam.id}">0</span></div>
+      <div class="stat-row"><span class="dot dot-red"></span><span>Unknown</span><span id="unknown-${cam.id}">0</span></div>
+      <div class="stat-row"><span class="dot dot-orange"></span><span>Spoof</span><span id="spoof-${cam.id}">0</span></div>
+      <div class="stat-row"><span class="dot dot-magenta"></span><span>Repeat</span><span id="repeat-${cam.id}">0</span></div>
+    `;
+    cameraGrid.appendChild(card);
+    cameraState[cam.id] = { statsTimer: null };
+
+    document.getElementById(`start-${cam.id}`).addEventListener("click", () => startCamera(cam.id));
+    document.getElementById(`stop-${cam.id}`).addEventListener("click", () => stopCamera(cam.id));
+  });
+}
+
+async function startCamera(id) {
+  const res = await fetch(`/api/live/start/${id}`, { method: "POST" });
   const data = await res.json();
   if (!data.success) {
     alert(data.message || "Could not start camera.");
     return;
   }
-  liveVideo.src = "/video_feed?t=" + Date.now();
-  liveVideo.classList.add("visible");
-  liveVideoPlaceholder.style.display = "none";
-  liveStartBtn.disabled = true;
-  liveStopBtn.disabled = false;
-  document.getElementById("statStatus").textContent = "Running";
-  document.getElementById("statStatus").className = "badge badge-on";
-  liveStatsTimer = setInterval(pollLiveStats, 1000);
-});
+  document.getElementById(`video-${id}`).src = `/video_feed/${id}?t=` + Date.now();
+  document.getElementById(`video-${id}`).classList.add("visible");
+  document.getElementById(`placeholder-${id}`).style.display = "none";
+  document.getElementById(`start-${id}`).disabled = true;
+  document.getElementById(`stop-${id}`).disabled = false;
+  document.getElementById(`badge-${id}`).textContent = "Running";
+  document.getElementById(`badge-${id}`).className = "badge badge-on";
+  cameraState[id].statsTimer = setInterval(() => pollCameraStats(id), 1000);
+}
 
-liveStopBtn.addEventListener("click", async () => {
-  await fetch("/api/live/stop", { method: "POST" });
-  liveVideo.src = "";
-  liveVideo.classList.remove("visible");
-  liveVideoPlaceholder.style.display = "flex";
-  liveStartBtn.disabled = false;
-  liveStopBtn.disabled = true;
-  document.getElementById("statStatus").textContent = "Stopped";
-  document.getElementById("statStatus").className = "badge badge-off";
-  clearInterval(liveStatsTimer);
-  setStatus("Live monitoring stopped.");
-});
+async function stopCamera(id) {
+  await fetch(`/api/live/stop/${id}`, { method: "POST" });
+  document.getElementById(`video-${id}`).src = "";
+  document.getElementById(`video-${id}`).classList.remove("visible");
+  document.getElementById(`placeholder-${id}`).style.display = "flex";
+  document.getElementById(`start-${id}`).disabled = false;
+  document.getElementById(`stop-${id}`).disabled = true;
+  document.getElementById(`badge-${id}`).textContent = "Stopped";
+  document.getElementById(`badge-${id}`).className = "badge badge-off";
+  clearInterval(cameraState[id].statsTimer);
+  setStatus(`Camera '${id}' stopped.`);
+}
 
-async function pollLiveStats() {
+async function pollCameraStats(id) {
   try {
-    const res = await fetch("/api/live/stats");
+    const res = await fetch(`/api/live/stats/${id}`);
     const s = await res.json();
-    document.getElementById("statFps").textContent = s.fps ? s.fps.toFixed(1) : "0.0";
-    document.getElementById("statFaces").textContent = s.faces ?? 0;
-    document.getElementById("statKnown").textContent = s.known ?? 0;
-    document.getElementById("statUnknown").textContent = s.unknown ?? 0;
-    document.getElementById("statSpoof").textContent = s.spoof ?? 0;
-    document.getElementById("statRepeat").textContent = s.repeat ?? 0;
+    document.getElementById(`fps-${id}`).textContent = s.fps ? s.fps.toFixed(1) : "0.0";
+    document.getElementById(`known-${id}`).textContent = s.known ?? 0;
+    document.getElementById(`unknown-${id}`).textContent = s.unknown ?? 0;
+    document.getElementById(`spoof-${id}`).textContent = s.spoof ?? 0;
+    document.getElementById(`repeat-${id}`).textContent = s.repeat ?? 0;
   } catch (e) { /* ignore transient errors */ }
 }
+
+initCameras();
 
 // ---------- Registration ----------
 const regVideo = document.getElementById("regVideo");
@@ -239,6 +271,190 @@ document.getElementById("reportBtn").addEventListener("click", () => {
   setStatus("Generating PDF report...");
   window.location.href = "/api/report";
   setTimeout(() => setStatus("Report ready — check your downloads."), 1500);
+});
+
+// ---------- Analytics ----------
+const chartInstances = {};
+
+function renderChart(canvasId, config) {
+  const ctx = document.getElementById(canvasId).getContext("2d");
+  if (chartInstances[canvasId]) chartInstances[canvasId].destroy();
+  chartInstances[canvasId] = new Chart(ctx, config);
+}
+
+const CHART_TEXT_COLOR = "#9099a8";
+const CHART_GRID_COLOR = "#2a2f3a";
+
+function baseOptions(extra = {}) {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: CHART_TEXT_COLOR } } },
+    scales: {
+      x: { ticks: { color: CHART_TEXT_COLOR }, grid: { color: CHART_GRID_COLOR } },
+      y: { ticks: { color: CHART_TEXT_COLOR }, grid: { color: CHART_GRID_COLOR }, beginAtZero: true },
+    },
+    ...extra,
+  };
+}
+
+async function loadAnalytics() {
+  setStatus("Loading analytics...");
+  const res = await fetch("/api/analytics");
+  const data = await res.json();
+
+  renderChart("chartEntriesPerDay", {
+    type: "bar",
+    data: {
+      labels: data.entries_per_day.labels,
+      datasets: [{ label: "Entries", data: data.entries_per_day.values, backgroundColor: "#3d8bfd" }],
+    },
+    options: baseOptions(),
+  });
+
+  renderChart("chartPeakHours", {
+    type: "bar",
+    data: {
+      labels: data.peak_hours.labels,
+      datasets: [{ label: "Entries", data: data.peak_hours.values, backgroundColor: "#2ecc71" }],
+    },
+    options: baseOptions(),
+  });
+
+  renderChart("chartAuthVsSusp", {
+    type: "doughnut",
+    data: {
+      labels: ["Authorized", "Suspicious"],
+      datasets: [{
+        data: [data.authorized_vs_suspicious.authorized, data.authorized_vs_suspicious.suspicious],
+        backgroundColor: ["#2ecc71", "#e74c3c"],
+      }],
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: CHART_TEXT_COLOR } } } },
+  });
+
+  renderChart("chartReasons", {
+    type: "doughnut",
+    data: {
+      labels: ["Unknown Face", "Spoof Suspected", "Repeat Offender"],
+      datasets: [{
+        data: [
+          data.reason_breakdown.unknown_face || 0,
+          data.reason_breakdown.spoof_suspected || 0,
+          data.reason_breakdown.repeat_offender || 0,
+        ],
+        backgroundColor: ["#e74c3c", "#f39c12", "#e84fd0"],
+      }],
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: CHART_TEXT_COLOR } } } },
+  });
+
+  renderChart("chartTopVisitors", {
+    type: "bar",
+    data: {
+      labels: data.top_visitors.labels,
+      datasets: [{ label: "Entries", data: data.top_visitors.values, backgroundColor: "#3d8bfd" }],
+    },
+    options: { ...baseOptions(), indexAxis: "y" },
+  });
+
+  setStatus("Analytics loaded.");
+}
+
+// ---------- Settings ----------
+let cameraRows = [];
+
+function renderCameraRows() {
+  const container = document.getElementById("cameraSettingsList");
+  container.innerHTML = "";
+  cameraRows.forEach((cam, i) => {
+    const row = document.createElement("div");
+    row.className = "camera-row";
+    row.innerHTML = `
+      <input type="text" placeholder="Name (e.g. Main Entrance)" value="${cam.name}" data-field="name" data-index="${i}">
+      <input type="text" placeholder="Source (0, 1, or camera URL)" value="${cam.source}" data-field="source" data-index="${i}">
+      <button type="button" data-remove="${i}">Remove</button>
+    `;
+    container.appendChild(row);
+  });
+
+  container.querySelectorAll("input").forEach(input => {
+    input.addEventListener("input", (e) => {
+      const idx = parseInt(e.target.dataset.index);
+      const field = e.target.dataset.field;
+      cameraRows[idx][field] = e.target.value;
+    });
+  });
+  container.querySelectorAll("button[data-remove]").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      cameraRows.splice(parseInt(e.target.dataset.remove), 1);
+      renderCameraRows();
+    });
+  });
+}
+
+document.getElementById("addCameraBtn").addEventListener("click", () => {
+  const nextNum = cameraRows.length + 1;
+  cameraRows.push({ id: `cam${nextNum}`, name: `Camera ${nextNum}`, source: "" });
+  renderCameraRows();
+});
+
+async function loadSettings() {
+  setStatus("Loading settings...");
+  const res = await fetch("/api/settings");
+  const s = await res.json();
+
+  cameraRows = (s.CAMERAS || []).map(c => ({ ...c }));
+  renderCameraRows();
+
+  document.getElementById("setDetectionConfidence").value = s.DETECTION_CONFIDENCE_THRESHOLD;
+  document.getElementById("setFaceMatchTolerance").value = s.FACE_MATCH_TOLERANCE;
+  document.getElementById("setProcessEveryN").value = s.PROCESS_EVERY_N_FRAMES;
+  document.getElementById("setConfidenceMinFrames").value = s.CONFIDENCE_MIN_FRAMES;
+  document.getElementById("setExitTimeout").value = s.EXIT_TIMEOUT_SECONDS;
+  document.getElementById("setLogCooldown").value = s.LOG_COOLDOWN_SECONDS;
+  document.getElementById("setRepeatThreshold").value = s.REPEAT_OFFENDER_THRESHOLD;
+  document.getElementById("setLivenessEnabled").checked = !!s.ENABLE_LIVENESS_CHECK;
+  document.getElementById("setEarThreshold").value = s.LIVENESS_EAR_THRESHOLD;
+  document.getElementById("setLivenessTimeout").value = s.LIVENESS_TIMEOUT_SECONDS;
+  document.getElementById("setSoundEnabled").checked = !!s.ENABLE_ALERT_SOUND;
+  document.getElementById("setAlertCooldown").value = s.ALERT_COOLDOWN_SECONDS;
+  document.getElementById("setEmailCooldown").value = s.EMAIL_ALERT_COOLDOWN_SECONDS;
+
+  setStatus("Settings loaded.");
+}
+
+document.getElementById("saveSettingsBtn").addEventListener("click", async () => {
+  const payload = {
+    CAMERAS: cameraRows.map(c => ({
+      id: c.id,
+      name: c.name,
+      source: isNaN(c.source) || c.source === "" ? c.source : parseInt(c.source),
+    })),
+    DETECTION_CONFIDENCE_THRESHOLD: parseFloat(document.getElementById("setDetectionConfidence").value),
+    FACE_MATCH_TOLERANCE: parseFloat(document.getElementById("setFaceMatchTolerance").value),
+    PROCESS_EVERY_N_FRAMES: parseInt(document.getElementById("setProcessEveryN").value),
+    CONFIDENCE_MIN_FRAMES: parseInt(document.getElementById("setConfidenceMinFrames").value),
+    EXIT_TIMEOUT_SECONDS: parseInt(document.getElementById("setExitTimeout").value),
+    LOG_COOLDOWN_SECONDS: parseInt(document.getElementById("setLogCooldown").value),
+    REPEAT_OFFENDER_THRESHOLD: parseInt(document.getElementById("setRepeatThreshold").value),
+    ENABLE_LIVENESS_CHECK: document.getElementById("setLivenessEnabled").checked,
+    LIVENESS_EAR_THRESHOLD: parseFloat(document.getElementById("setEarThreshold").value),
+    LIVENESS_TIMEOUT_SECONDS: parseInt(document.getElementById("setLivenessTimeout").value),
+    ENABLE_ALERT_SOUND: document.getElementById("setSoundEnabled").checked,
+    ALERT_COOLDOWN_SECONDS: parseInt(document.getElementById("setAlertCooldown").value),
+    EMAIL_ALERT_COOLDOWN_SECONDS: parseInt(document.getElementById("setEmailCooldown").value),
+  };
+
+  const res = await fetch("/api/settings", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  const msg = document.getElementById("settingsMsg");
+  msg.textContent = data.message || (data.success ? "Saved." : "Failed to save.");
+  msg.style.color = data.success ? "#2ecc71" : "#e74c3c";
 });
 
 // Initial load

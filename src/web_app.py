@@ -22,7 +22,7 @@ from flask import (
 )
 from werkzeug.utils import secure_filename
 
-from config import KNOWN_FACES_DIR, SNAPSHOTS_DIR
+from config import KNOWN_FACES_DIR, SNAPSHOTS_DIR, CAMERAS, get_current_settings, save_settings
 from database import init_db, get_all_logs, add_person
 from error_handler import logger
 from report_generator import generate_pdf_report
@@ -37,9 +37,17 @@ app.secret_key = os.urandom(24)  # session resets each restart — fine for loca
 
 init_db()
 
-live_controller = LiveFeedController()
+# One LiveFeedController per configured camera, keyed by camera id
+live_controllers = {
+    cam["id"]: LiveFeedController(camera_source=cam["source"], camera_name=cam["name"])
+    for cam in CAMERAS
+}
 reg_camera = RegistrationCamera()
 reg_encoder = FaceEncoder()
+
+
+def any_live_camera_running():
+    return any(c.running for c in live_controllers.values())
 
 
 def login_required(f):
@@ -103,28 +111,43 @@ def index():
 
 
 # ---------------------------------------------------------
-# Live monitoring
+# Live monitoring (multi-camera)
 # ---------------------------------------------------------
-@app.route("/api/live/start", methods=["POST"])
+@app.route("/api/cameras")
 @login_required
-def live_start():
+def api_cameras():
+    return jsonify([{"id": cam["id"], "name": cam["name"]} for cam in CAMERAS])
+
+
+@app.route("/api/live/start/<camera_id>", methods=["POST"])
+@login_required
+def live_start(camera_id):
+    controller = live_controllers.get(camera_id)
+    if controller is None:
+        return jsonify(success=False, message="Unknown camera."), 404
     if reg_camera.running:
         return jsonify(success=False, message="Registration camera is active. Stop it first."), 400
-    ok = live_controller.start()
+    ok = controller.start()
     return jsonify(success=ok)
 
 
-@app.route("/api/live/stop", methods=["POST"])
+@app.route("/api/live/stop/<camera_id>", methods=["POST"])
 @login_required
-def live_stop():
-    live_controller.stop()
+def live_stop(camera_id):
+    controller = live_controllers.get(camera_id)
+    if controller is None:
+        return jsonify(success=False, message="Unknown camera."), 404
+    controller.stop()
     return jsonify(success=True)
 
 
-@app.route("/api/live/stats")
+@app.route("/api/live/stats/<camera_id>")
 @login_required
-def live_stats():
-    return jsonify(running=live_controller.running, **live_controller.get_stats())
+def live_stats(camera_id):
+    controller = live_controllers.get(camera_id)
+    if controller is None:
+        return jsonify(success=False, message="Unknown camera."), 404
+    return jsonify(running=controller.running, **controller.get_stats())
 
 
 def _mjpeg_generator(get_frame_func):
@@ -140,10 +163,13 @@ def _mjpeg_generator(get_frame_func):
         time.sleep(0.03)
 
 
-@app.route("/video_feed")
+@app.route("/video_feed/<camera_id>")
 @login_required
-def video_feed():
-    return Response(_mjpeg_generator(live_controller.get_latest_frame),
+def video_feed(camera_id):
+    controller = live_controllers.get(camera_id)
+    if controller is None:
+        return "", 404
+    return Response(_mjpeg_generator(controller.get_latest_frame),
                      mimetype="multipart/x-mixed-replace; boundary=frame")
 
 
@@ -153,8 +179,8 @@ def video_feed():
 @app.route("/api/register/start", methods=["POST"])
 @login_required
 def register_start():
-    if live_controller.running:
-        return jsonify(success=False, message="Live monitoring is active. Stop it first."), 400
+    if any_live_camera_running():
+        return jsonify(success=False, message="Live monitoring is active. Stop all cameras first."), 400
     ok = reg_camera.start()
     return jsonify(success=ok)
 
@@ -212,7 +238,8 @@ def register_capture():
     person_id = add_person(name=name, identifier=identifier, organization=organization,
                             embedding=encodings[0], photo_path=photo_path)
     if person_id:
-        live_controller.refresh_known_persons()
+        for controller in live_controllers.values():
+            controller.refresh_known_persons()
         return jsonify(success=True, person_id=person_id)
     return jsonify(success=False, message="Database error — could not save."), 500
 
@@ -258,6 +285,79 @@ def api_snapshot(filename):
 def api_report():
     path = generate_pdf_report()
     return send_file(path, as_attachment=True)
+
+
+# ---------------------------------------------------------
+# Analytics
+# ---------------------------------------------------------
+# ---------------------------------------------------------
+# Settings
+# ---------------------------------------------------------
+@app.route("/api/settings", methods=["GET"])
+@login_required
+def api_get_settings():
+    return jsonify(get_current_settings())
+
+
+@app.route("/api/settings", methods=["POST"])
+@login_required
+def api_save_settings():
+    if any_live_camera_running() or reg_camera.running:
+        return jsonify(success=False,
+                        message="Stop all cameras before changing settings."), 400
+
+    new_values = request.get_json(force=True, silent=True) or {}
+    try:
+        save_settings(new_values)
+        logger.info(f"Settings updated: {list(new_values.keys())}")
+        return jsonify(success=True, message="Saved. Restart the app for changes to take effect.")
+    except Exception as e:
+        logger.error(f"Could not save settings: {e}")
+        return jsonify(success=False, message=str(e)), 500
+
+
+@app.route("/api/analytics")
+@login_required
+def api_analytics():
+    logs = get_all_logs(limit=2000)
+
+    entries_per_day = {}
+    peak_hours = {h: 0 for h in range(24)}
+    top_visitors = {}
+    authorized_count = 0
+    suspicious_count = 0
+    reason_counts = {"unknown_face": 0, "spoof_suspected": 0, "repeat_offender": 0}
+
+    for log in logs:
+        if log["event_type"] != "ENTRY":
+            continue
+
+        ts = log["timestamp"]
+        day = ts[:10]
+        hour = int(ts[11:13])
+
+        entries_per_day[day] = entries_per_day.get(day, 0) + 1
+        peak_hours[hour] += 1
+
+        if log["is_suspicious"]:
+            suspicious_count += 1
+            reason = log.get("reason") or "unknown_face"
+            reason_counts[reason] = reason_counts.get(reason, 0) + 1
+        else:
+            authorized_count += 1
+            name = log["name"] or "Unknown"
+            top_visitors[name] = top_visitors.get(name, 0) + 1
+
+    sorted_days = sorted(entries_per_day.keys())
+    top_visitors_sorted = sorted(top_visitors.items(), key=lambda x: x[1], reverse=True)[:5]
+
+    return jsonify({
+        "entries_per_day": {"labels": sorted_days, "values": [entries_per_day[d] for d in sorted_days]},
+        "peak_hours": {"labels": [f"{h:02d}:00" for h in range(24)], "values": [peak_hours[h] for h in range(24)]},
+        "authorized_vs_suspicious": {"authorized": authorized_count, "suspicious": suspicious_count},
+        "reason_breakdown": reason_counts,
+        "top_visitors": {"labels": [v[0] for v in top_visitors_sorted], "values": [v[1] for v in top_visitors_sorted]},
+    })
 
 
 if __name__ == "__main__":

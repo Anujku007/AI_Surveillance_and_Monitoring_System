@@ -1,2 +1,3 @@
 database/secret.key
 database/surveillance.db
+database/email_config.json

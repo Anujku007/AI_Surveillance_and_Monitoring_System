@@ -136,6 +136,18 @@ body {
 .tab-panel.active { display: block; }
 
 /* ---------- Live / Register panels ---------- */
+.camera-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 18px;
+}
+.camera-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+.camera-card h4 { margin: 0 0 10px; font-size: 14px; }
 .panel-grid {
   display: grid;
   grid-template-columns: 1fr 280px;
@@ -266,6 +278,72 @@ body {
   color: var(--text-dim);
   line-height: 1.7;
   white-space: pre-line;
+}
+
+/* ---------- Analytics ---------- */
+.analytics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.chart-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  height: 320px;
+}
+.chart-card-small { height: 280px; }
+.chart-card h3 { margin: 0 0 10px; font-size: 14px; }
+.chart-card canvas { max-height: 260px; }
+
+/* ---------- Settings ---------- */
+.settings-wrap { max-width: 640px; }
+.settings-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  margin-bottom: 16px;
+}
+.settings-card h3 { margin-top: 0; font-size: 14px; }
+.settings-card label { display: block; font-size: 12px; color: var(--text-dim); margin-top: 10px; }
+.settings-card input[type="number"], .settings-card input[type="text"] {
+  width: 100%;
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 9px;
+  color: var(--text);
+  font-size: 13px;
+  margin-top: 3px;
+}
+.checkbox-label { display: flex !important; align-items: center; gap: 8px; margin-top: 12px !important; }
+.checkbox-label input { width: auto !important; margin-top: 0; }
+
+.camera-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.camera-row input {
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 9px;
+  color: var(--text);
+  font-size: 13px;
+}
+.camera-row button {
+  background: var(--red);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 10px;
+  cursor: pointer;
+  font-size: 12px;
 }
 
 /* ---------- Status bar ---------- */
