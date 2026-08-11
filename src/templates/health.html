@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>System Health — AI Surveillance System</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-title"><span class="logo">🛡</span><span>System Health</span></div>
+    <div class="topbar-actions">
+      <button id="recheckBtn" class="btn btn-accent">Run Check Again</button>
+      <a href="{{ url_for('index') }}" class="btn btn-ghost">← Back to Dashboard</a>
+    </div>
+  </header>
+
+  <main class="content settings-content">
+    <div id="overallBanner" class="save-banner">Running checks...</div>
+    <div id="checksList" class="settings-card"></div>
+  </main>
+
+  <script>
+    async function loadHealth() {
+      document.getElementById("overallBanner").textContent = "Running checks...";
+      document.getElementById("checksList").innerHTML = "";
+
+      const res = await fetch("/api/health");
+      const data = await res.json();
+
+      const banner = document.getElementById("overallBanner");
+      banner.textContent = data.overall_ok
+        ? "✅ All critical checks passed. System ready."
+        : "⚠️ One or more critical checks failed — see details below.";
+      banner.style.color = data.overall_ok ? "" : "#e74c3c";
+      banner.style.borderColor = data.overall_ok ? "" : "#a12020";
+      banner.style.background = data.overall_ok ? "" : "#3d1a1a";
+
+      const list = document.getElementById("checksList");
+      data.checks.forEach(c => {
+        const row = document.createElement("div");
+        row.style.padding = "10px 0";
+        row.style.borderBottom = "1px solid var(--border)";
+        row.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong>${c.ok ? "✅" : "❌"} ${c.name}</strong>
+          </div>
+          <div style="color: var(--text-dim); font-size: 12.5px; margin-top: 4px;">${c.detail}</div>
+        `;
+        list.appendChild(row);
+      });
+    }
+
+    document.getElementById("recheckBtn").addEventListener("click", loadHealth);
+    loadHealth();
+  </script>
+</body>
+</html>

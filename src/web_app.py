@@ -22,7 +22,9 @@ from flask import (
 )
 from werkzeug.utils import secure_filename
 
-from config import KNOWN_FACES_DIR, SNAPSHOTS_DIR, CAMERAS, get_current_settings, save_settings
+from config import KNOWN_FACES_DIR, SNAPSHOTS_DIR, CAMERAS
+from config import KNOWN_FACES_DIR, SNAPSHOTS_DIR, CAMERAS
+import config as app_config
 from database import init_db, get_all_logs, add_person
 from error_handler import logger
 from report_generator import generate_pdf_report
@@ -108,6 +110,60 @@ def logout():
 @login_required
 def index():
     return render_template("dashboard.html")
+
+
+# ---------------------------------------------------------
+# Settings
+# ---------------------------------------------------------
+@app.route("/api/health")
+@login_required
+def api_health():
+    from health_check import run_health_check
+    results = run_health_check()
+    overall_ok = all(r["ok"] for r in results[:4])  # model, camera, database, encryption
+    return jsonify(overall_ok=overall_ok, checks=results)
+
+
+@app.route("/health")
+@login_required
+def health_page():
+    return render_template("health.html")
+
+
+@app.route("/settings", methods=["GET", "POST"])
+@login_required
+def settings_page():
+    saved = False
+    if request.method == "POST":
+        cameras = []
+        for i in range(1, 4):  # up to 3 camera slots in the form
+            name = request.form.get(f"cam{i}_name", "").strip()
+            source = request.form.get(f"cam{i}_source", "").strip()
+            if name and source:
+                # numeric strings (e.g. "0") become a webcam index; anything
+                # else (a URL) stays a string, same as config.py's CAMERAS
+                source_value = int(source) if source.isdigit() else source
+                cameras.append({"id": f"cam{i}", "name": name, "source": source_value})
+
+        new_values = {
+            "CAMERAS": cameras if cameras else app_config.CAMERAS,
+            "FACE_MATCH_TOLERANCE": float(request.form.get("face_match_tolerance", app_config.FACE_MATCH_TOLERANCE)),
+            "EXIT_TIMEOUT_SECONDS": int(request.form.get("exit_timeout", app_config.EXIT_TIMEOUT_SECONDS)),
+            "LOG_COOLDOWN_SECONDS": int(request.form.get("log_cooldown", app_config.LOG_COOLDOWN_SECONDS)),
+            "PROCESS_EVERY_N_FRAMES": int(request.form.get("process_every_n", app_config.PROCESS_EVERY_N_FRAMES)),
+            "ENABLE_LIVENESS_CHECK": request.form.get("enable_liveness") == "on",
+            "LIVENESS_EAR_THRESHOLD": float(request.form.get("liveness_ear", app_config.LIVENESS_EAR_THRESHOLD)),
+            "LIVENESS_TIMEOUT_SECONDS": int(request.form.get("liveness_timeout", app_config.LIVENESS_TIMEOUT_SECONDS)),
+            "REPEAT_OFFENDER_THRESHOLD": int(request.form.get("repeat_threshold", app_config.REPEAT_OFFENDER_THRESHOLD)),
+            "ENABLE_ALERT_SOUND": request.form.get("enable_alert_sound") == "on",
+            "ALERT_COOLDOWN_SECONDS": int(request.form.get("alert_cooldown", app_config.ALERT_COOLDOWN_SECONDS)),
+        }
+        app_config.save_settings(new_values)
+        logger.info("Settings updated via web UI.")
+        saved = True
+
+    current = app_config.get_current_settings()
+    return render_template("settings.html", s=current, saved=saved)
 
 
 # ---------------------------------------------------------
@@ -361,5 +417,8 @@ def api_analytics():
 
 
 if __name__ == "__main__":
+    from health_check import run_health_check, print_health_report
+    print_health_report(run_health_check())
+
     logger.info("Starting web app at http://127.0.0.1:5000")
     app.run(host="127.0.0.1", port=5000, debug=False, threaded=True)

@@ -7,6 +7,7 @@ Keep all tunable values here so they can be adjusted in one place
 
 import os
 import json
+import json
 
 # ---------------------------------------------------------
 # Base paths
@@ -107,6 +108,30 @@ CAMERAS = [
 ]
 
 # ---------------------------------------------------------
+# Camera auto-recovery
+# ---------------------------------------------------------
+# If this many consecutive frame reads fail, the camera is considered
+# disconnected and a reconnect attempt is triggered.
+CAMERA_READ_FAIL_THRESHOLD = 15
+
+# Reconnect attempts back off exponentially between these bounds (seconds),
+# so a genuinely unplugged camera doesn't spin retrying every few ms.
+CAMERA_RECONNECT_BASE_DELAY = 1
+CAMERA_RECONNECT_MAX_DELAY = 15
+
+# ---------------------------------------------------------
+# Camera auto-recovery
+# ---------------------------------------------------------
+# Consecutive failed frame reads before a camera is considered disconnected
+# (rather than reacting to a single dropped frame, which is normal/harmless)
+CAMERA_FAILURE_THRESHOLD = 15
+
+# Reconnect attempts back off exponentially between these bounds, so a
+# genuinely unplugged camera doesn't get hammered with retry attempts
+CAMERA_RECONNECT_INITIAL_DELAY = 1
+CAMERA_RECONNECT_MAX_DELAY = 15
+
+# ---------------------------------------------------------
 # Entry/Exit tracking logic
 # ---------------------------------------------------------
 # How many seconds a person must be absent from frame before
@@ -168,6 +193,59 @@ LIVENESS_TIMEOUT_SECONDS = 8
 # ---------------------------------------------------------
 for directory in (MODELS_DIR, DATABASE_DIR, KNOWN_FACES_DIR, LOGS_DIR, SNAPSHOTS_DIR):
     os.makedirs(directory, exist_ok=True)
+
+# ---------------------------------------------------------
+# Runtime-configurable settings (settings.json) — lets an admin adjust
+# these values through the web UI's Settings page instead of editing this
+# file directly. Changes take effect after the app is restarted, since
+# Python module values are fixed at import time.
+# ---------------------------------------------------------
+SETTINGS_PATH = os.path.join(DATABASE_DIR, "settings.json")
+
+TUNABLE_SETTINGS = {
+    "FACE_MATCH_TOLERANCE": FACE_MATCH_TOLERANCE,
+    "EXIT_TIMEOUT_SECONDS": EXIT_TIMEOUT_SECONDS,
+    "LOG_COOLDOWN_SECONDS": LOG_COOLDOWN_SECONDS,
+    "PROCESS_EVERY_N_FRAMES": PROCESS_EVERY_N_FRAMES,
+    "ENABLE_LIVENESS_CHECK": ENABLE_LIVENESS_CHECK,
+    "LIVENESS_EAR_THRESHOLD": LIVENESS_EAR_THRESHOLD,
+    "LIVENESS_TIMEOUT_SECONDS": LIVENESS_TIMEOUT_SECONDS,
+    "REPEAT_OFFENDER_THRESHOLD": REPEAT_OFFENDER_THRESHOLD,
+    "ENABLE_ALERT_SOUND": ENABLE_ALERT_SOUND,
+    "ALERT_COOLDOWN_SECONDS": ALERT_COOLDOWN_SECONDS,
+}
+
+
+def _load_settings_overrides():
+    if not os.path.exists(SETTINGS_PATH):
+        return
+    try:
+        with open(SETTINGS_PATH) as f:
+            saved = json.load(f)
+        for key, value in saved.items():
+            if key == "CAMERAS":
+                globals()["CAMERAS"] = value
+            elif key in TUNABLE_SETTINGS:
+                globals()[key] = value
+                TUNABLE_SETTINGS[key] = value
+    except Exception:
+        pass  # fall back silently to defaults — error_handler isn't available this early
+
+
+def get_current_settings():
+    settings = dict(TUNABLE_SETTINGS)
+    settings["CAMERAS"] = CAMERAS
+    return settings
+
+
+def save_settings(new_values):
+    current = get_current_settings()
+    current.update(new_values)
+    with open(SETTINGS_PATH, "w") as f:
+        json.dump(current, f, indent=2)
+
+
+_load_settings_overrides()
 
 # ---------------------------------------------------------
 # Runtime-configurable settings (settings.json overrides)

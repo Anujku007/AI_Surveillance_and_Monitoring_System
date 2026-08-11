@@ -204,6 +204,7 @@ body {
 }
 .badge-off { background: #33202080; color: var(--text-dim); border: 1px solid var(--border); }
 .badge-on { background: #123d24; color: var(--green); border: 1px solid #1e6b3c; }
+.badge-warn { background: #3d2c0f; color: var(--orange); border: 1px solid #6b4e1e; }
 
 .stats-column form { display: flex; flex-direction: column; gap: 4px; }
 .stats-column form label { font-size: 12px; color: var(--text-dim); margin-top: 8px; }
@@ -297,55 +298,6 @@ body {
 .chart-card h3 { margin: 0 0 10px; font-size: 14px; }
 .chart-card canvas { max-height: 260px; }
 
-/* ---------- Settings ---------- */
-.settings-wrap { max-width: 640px; }
-.settings-card {
-  background: var(--bg-panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px 18px;
-  margin-bottom: 16px;
-}
-.settings-card h3 { margin-top: 0; font-size: 14px; }
-.settings-card label { display: block; font-size: 12px; color: var(--text-dim); margin-top: 10px; }
-.settings-card input[type="number"], .settings-card input[type="text"] {
-  width: 100%;
-  background: var(--bg-panel-2);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 7px 9px;
-  color: var(--text);
-  font-size: 13px;
-  margin-top: 3px;
-}
-.checkbox-label { display: flex !important; align-items: center; gap: 8px; margin-top: 12px !important; }
-.checkbox-label input { width: auto !important; margin-top: 0; }
-
-.camera-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr auto;
-  gap: 8px;
-  align-items: center;
-  margin-bottom: 8px;
-}
-.camera-row input {
-  background: var(--bg-panel-2);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 7px 9px;
-  color: var(--text);
-  font-size: 13px;
-}
-.camera-row button {
-  background: var(--red);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 7px 10px;
-  cursor: pointer;
-  font-size: 12px;
-}
-
 /* ---------- Status bar ---------- */
 .statusbar {
   border-top: 1px solid var(--border);
@@ -354,3 +306,45 @@ body {
   font-size: 12px;
   background: var(--bg-panel);
 }
+
+/* ---------- Settings page ---------- */
+.settings-content { max-width: 700px; margin: 0 auto; }
+.save-banner {
+  background: #123d24;
+  border: 1px solid #1e6b3c;
+  color: var(--green);
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+.settings-form { display: flex; flex-direction: column; gap: 16px; }
+.settings-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+.settings-card h3 { margin: 0 0 4px; font-size: 14.5px; }
+.settings-card .hint { color: var(--text-dim); font-size: 11.5px; margin: 0 0 10px; }
+.settings-card label {
+  display: block;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  margin-top: 12px;
+  margin-bottom: 4px;
+}
+.settings-card .hint-inline { color: #6b7280; font-size: 11px; }
+.settings-card input[type="text"],
+.settings-card input[type="number"] {
+  width: 100%;
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: var(--text);
+  font-size: 13px;
+}
+.checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text); }
+.camera-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.save-btn { align-self: flex-start; padding: 11px 22px; font-size: 13.5px; }

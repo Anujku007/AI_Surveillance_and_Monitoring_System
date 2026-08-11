@@ -19,7 +19,10 @@ import threading
 import time
 import cv2
 
-from config import CAMERA_INDEX, PROCESS_EVERY_N_FRAMES, ALERT_COOLDOWN_SECONDS
+from config import (
+    CAMERA_INDEX, PROCESS_EVERY_N_FRAMES, ALERT_COOLDOWN_SECONDS,
+    CAMERA_READ_FAIL_THRESHOLD, CAMERA_RECONNECT_BASE_DELAY, CAMERA_RECONNECT_MAX_DELAY
+)
 from error_handler import logger
 from detector import FaceDetector
 from encoder import FaceEncoder
@@ -42,7 +45,8 @@ class LiveFeedController:
 
         self._lock = threading.Lock()
         self._latest_frame = None
-        self._stats = {"fps": 0.0, "faces": 0, "known": 0, "unknown": 0, "spoof": 0, "repeat": 0}
+        self._stats = {"fps": 0.0, "faces": 0, "known": 0, "unknown": 0, "spoof": 0,
+                        "repeat": 0, "reconnecting": False}
 
     def is_running(self):
         return self.running
@@ -98,6 +102,16 @@ class LiveFeedController:
         with self._lock:
             return dict(self._stats)
 
+    def _reconnect(self):
+        """Releases and reopens the camera. Returns True if successful."""
+        try:
+            if self.cap:
+                self.cap.release()
+        except Exception:
+            pass
+        self.cap = cv2.VideoCapture(self.camera_source)
+        return self.cap.isOpened()
+
     def _loop(self):
         frame_count = 0
         last_results = []
@@ -106,11 +120,38 @@ class LiveFeedController:
         fps_frame_counter = 0
         last_alert_time = 0
 
+        consecutive_failures = 0
+        reconnect_delay = CAMERA_RECONNECT_BASE_DELAY
+
         while self.running:
             ret, frame = self.cap.read()
+
             if not ret:
-                time.sleep(0.1)
+                consecutive_failures += 1
+                if consecutive_failures >= CAMERA_READ_FAIL_THRESHOLD:
+                    with self._lock:
+                        self._stats["reconnecting"] = True
+                    logger.warning(
+                        f"Camera '{self.camera_name}' appears disconnected "
+                        f"({consecutive_failures} failed reads). Retrying in {reconnect_delay}s..."
+                    )
+                    time.sleep(reconnect_delay)
+                    if self._reconnect():
+                        logger.info(f"Camera '{self.camera_name}' reconnected.")
+                        consecutive_failures = 0
+                        reconnect_delay = CAMERA_RECONNECT_BASE_DELAY
+                        with self._lock:
+                            self._stats["reconnecting"] = False
+                    else:
+                        reconnect_delay = min(reconnect_delay * 2, CAMERA_RECONNECT_MAX_DELAY)
+                else:
+                    time.sleep(0.05)
                 continue
+
+            if consecutive_failures > 0:
+                consecutive_failures = 0
+                with self._lock:
+                    self._stats["reconnecting"] = False
 
             frame_count += 1
             fps_frame_counter += 1
@@ -139,4 +180,5 @@ class LiveFeedController:
             with self._lock:
                 self._latest_frame = display_frame
                 self._stats = {"fps": fps, "faces": len(last_results), "known": known,
-                                "unknown": unknown, "spoof": spoof, "repeat": repeat}
+                                "unknown": unknown, "spoof": spoof, "repeat": repeat,
+                                "reconnecting": False}

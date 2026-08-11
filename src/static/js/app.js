@@ -91,6 +91,15 @@ async function pollCameraStats(id) {
     document.getElementById(`unknown-${id}`).textContent = s.unknown ?? 0;
     document.getElementById(`spoof-${id}`).textContent = s.spoof ?? 0;
     document.getElementById(`repeat-${id}`).textContent = s.repeat ?? 0;
+
+    const badge = document.getElementById(`badge-${id}`);
+    if (s.reconnecting) {
+      badge.textContent = "Reconnecting...";
+      badge.className = "badge badge-warn";
+    } else if (s.running) {
+      badge.textContent = "Running";
+      badge.className = "badge badge-on";
+    }
   } catch (e) { /* ignore transient errors */ }
 }
 

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Settings — AI Surveillance System</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-title"><span class="logo">🛡</span><span>Settings</span></div>
+    <div class="topbar-actions">
+      <a href="{{ url_for('index') }}" class="btn btn-ghost">← Back to Dashboard</a>
+    </div>
+  </header>
+
+  <main class="content settings-content">
+    {% if saved %}
+    <div class="save-banner">Settings saved. Restart the app (python web_app.py) for changes to take effect.</div>
+    {% endif %}
+
+    <form method="POST" class="settings-form">
+
+      <div class="settings-card">
+        <h3>Cameras</h3>
+        <p class="hint">Enter a webcam index (e.g. 0) or an IP camera URL. Leave a slot blank to skip it.</p>
+        {% for i in range(1, 4) %}
+          {% set cam = s.CAMERAS[i-1] if s.CAMERAS|length >= i else None %}
+          <div class="camera-row">
+            <input type="text" name="cam{{ i }}_name" placeholder="Name (e.g. Main Entrance)" value="{{ cam.name if cam else '' }}">
+            <input type="text" name="cam{{ i }}_source" placeholder="Source (0 or http://...)" value="{{ cam.source if cam else '' }}">
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="settings-card">
+        <h3>Recognition</h3>
+        <label>Face Match Tolerance <span class="hint-inline">(lower = stricter, default 0.6)</span></label>
+        <input type="number" step="0.01" name="face_match_tolerance" value="{{ s.FACE_MATCH_TOLERANCE }}">
+
+        <label>Frames to Skip Between Detections <span class="hint-inline">(higher = faster but less responsive)</span></label>
+        <input type="number" name="process_every_n" value="{{ s.PROCESS_EVERY_N_FRAMES }}">
+      </div>
+
+      <div class="settings-card">
+        <h3>Entry / Exit Tracking</h3>
+        <label>Exit Timeout (seconds)</label>
+        <input type="number" name="exit_timeout" value="{{ s.EXIT_TIMEOUT_SECONDS }}">
+
+        <label>Log Cooldown (seconds)</label>
+        <input type="number" name="log_cooldown" value="{{ s.LOG_COOLDOWN_SECONDS }}">
+
+        <label>Repeat Offender Threshold <span class="hint-inline">(sightings before escalation)</span></label>
+        <input type="number" name="repeat_threshold" value="{{ s.REPEAT_OFFENDER_THRESHOLD }}">
+      </div>
+
+      <div class="settings-card">
+        <h3>Liveness Detection</h3>
+        <label class="checkbox-label">
+          <input type="checkbox" name="enable_liveness" {% if s.ENABLE_LIVENESS_CHECK %}checked{% endif %}>
+          Enable blink-based liveness detection
+        </label>
+        <label>Eye Aspect Ratio Threshold</label>
+        <input type="number" step="0.01" name="liveness_ear" value="{{ s.LIVENESS_EAR_THRESHOLD }}">
+        <label>Liveness Timeout (seconds)</label>
+        <input type="number" name="liveness_timeout" value="{{ s.LIVENESS_TIMEOUT_SECONDS }}">
+      </div>
+
+      <div class="settings-card">
+        <h3>Alerts</h3>
+        <label class="checkbox-label">
+          <input type="checkbox" name="enable_alert_sound" {% if s.ENABLE_ALERT_SOUND %}checked{% endif %}>
+          Enable alert sound
+        </label>
+        <label>Alert Cooldown (seconds)</label>
+        <input type="number" name="alert_cooldown" value="{{ s.ALERT_COOLDOWN_SECONDS }}">
+      </div>
+
+      <button type="submit" class="btn btn-accent save-btn">Save Settings</button>
+    </form>
+  </main>
+</body>
+</html>
