@@ -32,5 +32,17 @@ reportlab
 # --- Encryption for stored face embeddings ---
 cryptography
 
+# --- PostgreSQL support (optional — only needed if DB_BACKEND=postgresql) ---
+psycopg2-binary
+
 # --- Web front end ---
 flask
+flask-wtf
+flask-limiter
+python-dotenv
+pyopenssl
+waitress
+
+# --- Database (SQLAlchemy abstracts SQLite/PostgreSQL — same code, either backend) ---
+sqlalchemy
+psycopg2-binary

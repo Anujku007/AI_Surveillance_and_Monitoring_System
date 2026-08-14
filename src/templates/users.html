@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Users — AI Surveillance System</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-title"><span class="logo">🛡</span><span>User Management</span></div>
+    <div class="topbar-actions">
+      <a href="{{ url_for('index') }}" class="btn btn-ghost">← Back to Dashboard</a>
+    </div>
+  </header>
+
+  <main class="content settings-content">
+    {% if error %}
+    <div class="save-banner" style="color:#e74c3c; border-color:#a12020; background:#3d1a1a;">{{ error }}</div>
+    {% endif %}
+
+    <div class="settings-card">
+      <h3>Existing Users</h3>
+      <table class="log-table" style="margin-top:10px;">
+        <thead>
+          <tr><th>Username</th><th>Role</th><th>Created</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td>{{ u.username }}</td>
+            <td>{{ u.role }}</td>
+            <td>{{ u.created_at[:19].replace("T", "  ") }}</td>
+            <td>
+              <form method="POST" style="display:inline;" onsubmit="return confirm('Delete this user?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="user_id" value="{{ u.user_id }}">
+                <button type="submit" class="btn btn-danger" style="padding:4px 10px; font-size:11px;">Delete</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="settings-card">
+      <h3>Add New User</h3>
+      <p class="hint">
+        <strong>admin</strong> — full access. <strong>guard</strong> — live monitoring + logs, no settings/registration.
+        <strong>viewer</strong> — read-only logs/analytics.
+      </p>
+      <form method="POST" class="settings-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="action" value="add">
+
+        <label>Username</label>
+        <input type="text" name="username" required>
+
+        <label>Password</label>
+        <input type="password" name="password" required>
+
+        <label>Role</label>
+        <select name="role" style="width:100%; background:var(--bg-panel-2); border:1px solid var(--border); border-radius:6px; padding:8px; color:var(--text);">
+          <option value="viewer">viewer</option>
+          <option value="guard">guard</option>
+          <option value="admin">admin</option>
+        </select>
+
+        <button type="submit" class="btn btn-accent save-btn" style="margin-top:14px;">Add User</button>
+      </form>
+    </div>
+  </main>
+</body>
+</html>

@@ -19,6 +19,7 @@
     {% endif %}
 
     <form method="POST" class="settings-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
       <div class="settings-card">
         <h3>Cameras</h3>
@@ -75,8 +76,37 @@
         <input type="number" name="alert_cooldown" value="{{ s.ALERT_COOLDOWN_SECONDS }}">
       </div>
 
+      <div class="settings-card">
+        <h3>Data Retention</h3>
+        <p class="hint">Logs, snapshots, and stale watchlist entries older than this are purged automatically on startup.</p>
+        <label>Retention Period (days)</label>
+        <input type="number" name="retention_days" value="{{ s.RETENTION_DAYS }}">
+      </div>
+
       <button type="submit" class="btn btn-accent save-btn">Save Settings</button>
     </form>
+
+    <div class="settings-card" style="margin-top:16px;">
+      <h3>Manual Data Purge</h3>
+      <p class="hint">Immediately deletes logs/snapshots/watchlist entries older than the retention period above.</p>
+      <button id="purgeBtn" class="btn btn-danger">Purge Old Data Now</button>
+      <span id="purgeStatus" style="margin-left:10px; font-size:12px; color:var(--text-dim);"></span>
+    </div>
+
+    <p style="margin-top:16px;"><a href="{{ url_for('audit_page') }}" class="btn btn-ghost">View Audit Log</a></p>
+
+    <script>
+      document.getElementById("purgeBtn").addEventListener("click", async () => {
+        if (!confirm("This permanently deletes old logs, snapshots, and watchlist entries. Continue?")) return;
+        const days = document.querySelector('input[name="retention_days"]').value;
+        const formData = new FormData();
+        formData.append("days", days);
+        const res = await fetch("/api/purge", { method: "POST", body: formData });
+        const data = await res.json();
+        document.getElementById("purgeStatus").textContent =
+          `Deleted ${data.deleted_logs} log(s), ${data.deleted_files} snapshot(s), ${data.deleted_watchlist} watchlist entry(ies).`;
+      });
+    </script>
   </main>
 </body>
 </html>

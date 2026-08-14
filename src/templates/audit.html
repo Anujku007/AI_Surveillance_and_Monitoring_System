@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Audit Log — AI Surveillance System</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-title"><span class="logo">🛡</span><span>Audit Log</span></div>
+    <div class="topbar-actions">
+      <a href="{{ url_for('index') }}" class="btn btn-ghost">← Back to Dashboard</a>
+    </div>
+  </header>
+
+  <main class="content">
+    <div class="table-wrap" style="max-height: 80vh;">
+      <table class="log-table">
+        <thead>
+          <tr><th>Timestamp</th><th>User</th><th>Action</th><th>Details</th></tr>
+        </thead>
+        <tbody>
+          {% for e in entries %}
+          <tr>
+            <td>{{ e.timestamp[:19].replace("T", "  ") }}</td>
+            <td>{{ e.username or "-" }}</td>
+            <td>{{ e.action }}</td>
+            <td style="text-align:left;">{{ e.details }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </main>
+</body>
+</html>

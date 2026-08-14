@@ -53,9 +53,10 @@ def check_cameras():
 
 def check_database():
     from database import init_db, get_all_persons
+    from config import DB_BACKEND
     init_db()
     persons = get_all_persons()
-    return True, f"Database OK — {len(persons)} registered person(s)."
+    return True, f"Database OK (backend: {DB_BACKEND}) — {len(persons)} registered person(s)."
 
 
 def check_encryption():

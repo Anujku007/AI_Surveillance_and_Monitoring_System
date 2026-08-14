@@ -15,14 +15,19 @@
     <div class="topbar-actions">
       <button id="reportBtn" class="btn btn-accent">Generate PDF Report</button>
       <a href="{{ url_for('health_page') }}" class="btn btn-ghost">Health</a>
+      {% if role == 'admin' %}
       <a href="{{ url_for('settings_page') }}" class="btn btn-ghost">Settings</a>
+      <a href="{{ url_for('users_page') }}" class="btn btn-ghost">Users</a>
+      {% endif %}
       <a href="{{ url_for('logout') }}" class="btn btn-ghost">Logout</a>
     </div>
   </header>
 
   <nav class="tabs">
     <button class="tab-btn active" data-tab="live">Live Monitoring</button>
+    {% if role == 'admin' %}
     <button class="tab-btn" data-tab="register">Register Person</button>
+    {% endif %}
     <button class="tab-btn" data-tab="events">All Events</button>
     <button class="tab-btn" data-tab="sessions">Sessions</button>
     <button class="tab-btn" data-tab="analytics">Analytics</button>
@@ -60,6 +65,10 @@
             <input type="text" id="regId" required>
             <label>Organization</label>
             <input type="text" id="regOrg">
+            <label class="checkbox-label" style="margin-top:14px;">
+              <input type="checkbox" id="regConsent">
+              The person being registered has given consent for their face to be captured and stored.
+            </label>
           </form>
           <p class="hint">Fill the form, start the camera, wait for a green box around your face, then capture.</p>
         </div>
@@ -188,6 +197,7 @@
 
   <footer class="statusbar" id="statusBar">Ready</footer>
 
+  <script>window.USER_ROLE = "{{ role }}";</script>
   <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>

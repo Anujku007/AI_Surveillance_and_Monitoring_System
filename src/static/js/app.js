@@ -23,6 +23,7 @@ const cameraState = {}; // camera_id -> { statsTimer }
 async function initCameras() {
   const res = await fetch("/api/cameras");
   const cameras = await res.json();
+  const canControl = window.USER_ROLE === "admin" || window.USER_ROLE === "guard";
 
   cameras.forEach(cam => {
     const card = document.createElement("div");
@@ -34,8 +35,10 @@ async function initCameras() {
         <div id="placeholder-${cam.id}" class="video-placeholder">Camera feed will appear here</div>
       </div>
       <div class="controls-row">
-        <button id="start-${cam.id}" class="btn btn-success">Start</button>
-        <button id="stop-${cam.id}" class="btn btn-danger" disabled>Stop</button>
+        ${canControl ? `
+          <button id="start-${cam.id}" class="btn btn-success">Start</button>
+          <button id="stop-${cam.id}" class="btn btn-danger" disabled>Stop</button>
+        ` : ""}
         <span id="badge-${cam.id}" class="badge badge-off" style="margin-left:auto;">Stopped</span>
       </div>
       <div class="stat-row"><span>FPS</span><span id="fps-${cam.id}">–</span></div>
@@ -47,8 +50,12 @@ async function initCameras() {
     cameraGrid.appendChild(card);
     cameraState[cam.id] = { statsTimer: null };
 
-    document.getElementById(`start-${cam.id}`).addEventListener("click", () => startCamera(cam.id));
-    document.getElementById(`stop-${cam.id}`).addEventListener("click", () => stopCamera(cam.id));
+    if (canControl) {
+      document.getElementById(`start-${cam.id}`).addEventListener("click", () => startCamera(cam.id));
+      document.getElementById(`stop-${cam.id}`).addEventListener("click", () => stopCamera(cam.id));
+    }
+    // Everyone (including viewers) polls stats so the badge/feed status stays visible
+    cameraState[cam.id].statsTimer = setInterval(() => pollCameraStats(cam.id), 1000);
   });
 }
 
@@ -162,14 +169,20 @@ regCaptureBtn.addEventListener("click", async () => {
   const name = document.getElementById("regName").value.trim();
   const id = document.getElementById("regId").value.trim();
   const org = document.getElementById("regOrg").value.trim();
+  const consent = document.getElementById("regConsent").checked;
   if (!name || !id) {
     alert("Name and ID are required.");
+    return;
+  }
+  if (!consent) {
+    alert("Please confirm consent before registering this person's face.");
     return;
   }
   const formData = new FormData();
   formData.append("name", name);
   formData.append("identifier", id);
   formData.append("organization", org);
+  formData.append("consent", "true");
 
   const res = await fetch("/api/register/capture", { method: "POST", body: formData });
   const data = await res.json();
@@ -178,6 +191,7 @@ regCaptureBtn.addEventListener("click", async () => {
     document.getElementById("regName").value = "";
     document.getElementById("regId").value = "";
     document.getElementById("regOrg").value = "";
+    document.getElementById("regConsent").checked = false;
     regStopBtn.click();
   } else {
     alert(data.message || "Registration failed.");

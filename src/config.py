@@ -20,7 +20,76 @@ KNOWN_FACES_DIR = os.path.join(DATABASE_DIR, "known_faces")
 LOGS_DIR = os.path.join(BASE_DIR, "logs")
 SNAPSHOTS_DIR = os.path.join(LOGS_DIR, "snapshots")
 
+# ---------------------------------------------------------
+# Environment variables (.env) — loaded here, first, since config.py is
+# always the first module imported by any entry point. This guarantees
+# env vars (DB backend choice, Postgres credentials, Flask secret key)
+# are available before anything else in the app runs.
+# ---------------------------------------------------------
+os.makedirs(DATABASE_DIR, exist_ok=True)
+ENV_PATH = os.path.join(DATABASE_DIR, ".env")
+if not os.path.exists(ENV_PATH):
+    import secrets as _secrets
+    with open(ENV_PATH, "w") as f:
+        f.write(f"FLASK_SECRET_KEY={_secrets.token_hex(32)}\n")
+        f.write("DB_BACKEND=sqlite\n")
+        f.write("# Uncomment and fill in to use PostgreSQL instead of SQLite:\n")
+        f.write("# DB_BACKEND=postgresql\n")
+        f.write("# POSTGRES_HOST=localhost\n")
+        f.write("# POSTGRES_PORT=5432\n")
+        f.write("# POSTGRES_DB=surveillance\n")
+        f.write("# POSTGRES_USER=postgres\n")
+        f.write("# POSTGRES_PASSWORD=change-me\n")
+
+from dotenv import load_dotenv
+load_dotenv(ENV_PATH)
+
 DB_PATH = os.path.join(DATABASE_DIR, "surveillance.db")
+
+# Load database/.env as early as possible — config.py is always the first
+# module imported by everything else, so this must happen here (not in
+# web_app.py) for DB_BACKEND/PG_* below to see values from the .env file.
+try:
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(DATABASE_DIR, ".env"))
+except ImportError:
+    pass  # python-dotenv not installed yet — env vars just won't be loaded from file
+
+# ---------------------------------------------------------
+# Database backend
+# ---------------------------------------------------------
+# "sqlite" (default, zero setup — local development / single-machine demo)
+# or "postgresql" (production-grade, safely handles concurrent writes from
+# multiple cameras/sites — the realistic choice for a real deployment).
+# Set via DB_BACKEND in database/.env. Requires an app restart to apply.
+DB_BACKEND = os.environ.get("DB_BACKEND", "sqlite")
+
+# Only used when DB_BACKEND=postgresql. Set these in database/.env —
+# never hardcode real credentials here, this file may end up in a report
+# or version control.
+PG_HOST = os.environ.get("PG_HOST", "localhost")
+PG_PORT = os.environ.get("PG_PORT", "5432")
+PG_DBNAME = os.environ.get("PG_DBNAME", "surveillance")
+PG_USER = os.environ.get("PG_USER", "postgres")
+PG_PASSWORD = os.environ.get("PG_PASSWORD", "")
+
+# ---------------------------------------------------------
+# Database backend
+# ---------------------------------------------------------
+# 'sqlite' — local/single-site use (default, zero setup, what the desktop
+#            and development workflow use).
+# 'postgresql' — production/multi-site deployment. Requires a running
+#            PostgreSQL server and psycopg2-binary installed. Set via
+#            database/.env — never hardcode real credentials in this file.
+DB_BACKEND = os.environ.get("DB_BACKEND", "sqlite").strip().lower()
+
+POSTGRES_CONFIG = {
+    "host": os.environ.get("POSTGRES_HOST", "localhost"),
+    "port": int(os.environ.get("POSTGRES_PORT", 5432)),
+    "dbname": os.environ.get("POSTGRES_DB", "surveillance"),
+    "user": os.environ.get("POSTGRES_USER", "postgres"),
+    "password": os.environ.get("POSTGRES_PASSWORD", ""),
+}
 
 # Encryption key for biometric data (face embeddings). Auto-generated on
 # first run if it doesn't exist — see crypto.py. Keep this file private;
@@ -170,6 +239,24 @@ ENABLE_ALERT_SOUND = True
 ALERT_COOLDOWN_SECONDS = 5   # minimum gap between alert sounds, avoids spamming
 
 # ---------------------------------------------------------
+# HTTPS (self-signed, for local demo/testing)
+# ---------------------------------------------------------
+# When True, the web app serves over HTTPS using an auto-generated
+# self-signed certificate (requires pyOpenSSL). Browsers will show a
+# security warning since it's self-signed, not from a trusted CA — expected
+# for local development. Set to False to run plain HTTP (e.g. if pyOpenSSL
+# isn't installed, or during quick local testing).
+# ---------------------------------------------------------
+# Data retention
+# ---------------------------------------------------------
+# Entry/exit logs, snapshots, and stale watchlist entries older than this
+# many days are purged automatically at startup and can also be purged
+# manually from the Settings page. Set to 0 to disable auto-purge.
+RETENTION_DAYS = 90
+
+ENABLE_HTTPS = False
+
+# ---------------------------------------------------------
 # Liveness detection (anti-spoofing via blink detection)
 # ---------------------------------------------------------
 ENABLE_LIVENESS_CHECK = True
@@ -213,6 +300,7 @@ TUNABLE_SETTINGS = {
     "REPEAT_OFFENDER_THRESHOLD": REPEAT_OFFENDER_THRESHOLD,
     "ENABLE_ALERT_SOUND": ENABLE_ALERT_SOUND,
     "ALERT_COOLDOWN_SECONDS": ALERT_COOLDOWN_SECONDS,
+    "RETENTION_DAYS": RETENTION_DAYS,
 }
 
 

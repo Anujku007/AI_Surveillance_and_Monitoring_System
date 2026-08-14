@@ -1,3 +1,7 @@
+database/.env
 database/secret.key
-database/surveillance.db
 database/email_config.json
+database/admin_auth.json
+database/surveillance.db
+.env
+**/.env
