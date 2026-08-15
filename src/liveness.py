@@ -20,9 +20,11 @@ Usage:
 """
 
 import numpy as np
+import cv2
 
 from config import (
-    LIVENESS_EAR_THRESHOLD, LIVENESS_CONSEC_FRAMES, LIVENESS_TIMEOUT_SECONDS
+    LIVENESS_EAR_THRESHOLD, LIVENESS_CONSEC_FRAMES, LIVENESS_TIMEOUT_SECONDS,
+    TEXTURE_LAPLACIAN_THRESHOLD, TEXTURE_CONSEC_FRAMES
 )
 
 
@@ -125,4 +127,51 @@ class LivenessChecker:
     def forget(self, key):
         """Clears tracking state for a key (call when a person exits, so a
         fresh liveness check starts if/when they reappear)."""
+        self.state.pop(key, None)
+
+
+def compute_texture_variance(face_crop_bgr):
+    """
+    Laplacian variance of a face crop — a standard sharpness/texture
+    metric. Real skin at typical webcam distance shows more high-frequency
+    detail than a printed photo or a screen replay, which tends to be
+    flatter/smoother. Returns None if the crop is invalid/empty.
+    """
+    if face_crop_bgr is None or face_crop_bgr.size == 0:
+        return None
+    gray = cv2.cvtColor(face_crop_bgr, cv2.COLOR_BGR2GRAY)
+    return cv2.Laplacian(gray, cv2.CV_64F).var()
+
+
+class TextureAntiSpoofChecker:
+    """
+    Secondary, faster-triggering anti-spoofing signal based on image
+    texture — complements (does not replace) blink-based liveness.
+    A video replay would still blink normally and pass LivenessChecker,
+    but may still show flatter texture than a real face, which this catches.
+    Conversely, a genuinely out-of-focus real face could trigger this
+    heuristic falsely, which is why spoof_suspected in tracker.py combines
+    both signals rather than trusting either alone.
+    """
+    def __init__(self):
+        self.state = {}  # key -> {"consec_low": int, "flagged": bool}
+
+    def update(self, key, face_crop, now):
+        variance = compute_texture_variance(face_crop)
+        st = self.state.setdefault(key, {"consec_low": 0, "flagged": False})
+
+        if variance is None:
+            return st["flagged"]
+
+        if variance < TEXTURE_LAPLACIAN_THRESHOLD:
+            st["consec_low"] += 1
+            if st["consec_low"] >= TEXTURE_CONSEC_FRAMES:
+                st["flagged"] = True
+        else:
+            st["consec_low"] = 0
+            st["flagged"] = False
+
+        return st["flagged"]
+
+    def forget(self, key):
         self.state.pop(key, None)

@@ -276,6 +276,27 @@ LIVENESS_CONSEC_FRAMES = 2
 LIVENESS_TIMEOUT_SECONDS = 8
 
 # ---------------------------------------------------------
+# Texture-based anti-spoofing (secondary signal, faster-triggering)
+# ---------------------------------------------------------
+# Printed photos and low-res screen replays typically show less
+# high-frequency detail (skin pores, fine texture) than a real face at the
+# same distance from the camera — measurable via Laplacian variance
+# (a standard sharpness/texture metric). This is a HEURISTIC, not a
+# guarantee — a genuinely out-of-focus real face can also trigger it,
+# which is why it runs ALONGSIDE (not instead of) blink-based liveness.
+ENABLE_TEXTURE_ANTISPOOF = True
+
+# Below this Laplacian variance, a face crop is considered suspiciously
+# flat/low-detail. This value is resolution/distance-dependent — tune it
+# against your own camera during testing (log the actual variance values
+# you see for real vs. spoofed faces, then set the threshold between them).
+TEXTURE_LAPLACIAN_THRESHOLD = 60.0
+
+# Consecutive low-texture frames required before flagging, to filter out
+# a single motion-blurred frame from a real face
+TEXTURE_CONSEC_FRAMES = 3
+
+# ---------------------------------------------------------
 # Ensure required directories exist at import time
 # ---------------------------------------------------------
 for directory in (MODELS_DIR, DATABASE_DIR, KNOWN_FACES_DIR, LOGS_DIR, SNAPSHOTS_DIR):
@@ -301,6 +322,8 @@ TUNABLE_SETTINGS = {
     "ENABLE_ALERT_SOUND": ENABLE_ALERT_SOUND,
     "ALERT_COOLDOWN_SECONDS": ALERT_COOLDOWN_SECONDS,
     "RETENTION_DAYS": RETENTION_DAYS,
+    "ENABLE_TEXTURE_ANTISPOOF": ENABLE_TEXTURE_ANTISPOOF,
+    "TEXTURE_LAPLACIAN_THRESHOLD": TEXTURE_LAPLACIAN_THRESHOLD,
 }
 
 

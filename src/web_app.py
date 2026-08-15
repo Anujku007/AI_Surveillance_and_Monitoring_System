@@ -31,7 +31,6 @@ from werkzeug.utils import secure_filename
 from flask_wtf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from dotenv import load_dotenv
 
 from config import KNOWN_FACES_DIR, SNAPSHOTS_DIR, CAMERAS, DATABASE_DIR, ENABLE_HTTPS, RETENTION_DAYS
 import config as app_config
@@ -46,15 +45,6 @@ from live_feed import LiveFeedController
 from registration_panel import RegistrationCamera
 from encoder import FaceEncoder
 from dashboard import build_sessions
-
-# ---------------------------------------------------------
-# Persistent secret key (.env), so sessions survive restarts
-# ---------------------------------------------------------
-ENV_PATH = os.path.join(DATABASE_DIR, ".env")
-if not os.path.exists(ENV_PATH):
-    with open(ENV_PATH, "w") as f:
-        f.write(f"FLASK_SECRET_KEY={secrets.token_hex(32)}\n")
-load_dotenv(ENV_PATH)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", secrets.token_hex(32))
@@ -325,10 +315,10 @@ def register_capture():
         return jsonify(success=False, message="Name and ID are required."), 400
     if not consent_given:
         return jsonify(success=False, message="Consent is required before registering a person's face."), 400
-    if reg_camera.get_face_count() != 1:
-        return jsonify(success=False, message="Exactly one face must be visible."), 400
 
-    raw_frame = reg_camera.capture_raw_frame()
+    raw_frame, face_count = reg_camera.capture()
+    if face_count != 1:
+        return jsonify(success=False, message="Exactly one face must be visible."), 400
     if raw_frame is None:
         return jsonify(success=False, message="No frame available."), 400
 
@@ -469,6 +459,8 @@ def settings_page():
             "ENABLE_ALERT_SOUND": request.form.get("enable_alert_sound") == "on",
             "ALERT_COOLDOWN_SECONDS": int(request.form.get("alert_cooldown", app_config.ALERT_COOLDOWN_SECONDS)),
             "RETENTION_DAYS": int(request.form.get("retention_days", app_config.RETENTION_DAYS)),
+            "ENABLE_TEXTURE_ANTISPOOF": request.form.get("enable_texture_antispoof") == "on",
+            "TEXTURE_LAPLACIAN_THRESHOLD": float(request.form.get("texture_threshold", app_config.TEXTURE_LAPLACIAN_THRESHOLD)),
         }
         app_config.save_settings(new_values)
         logger.info(f"Settings updated via web UI by '{session['user']['username']}'.")

@@ -42,11 +42,11 @@ from config import (
     EXIT_TIMEOUT_SECONDS, LOG_COOLDOWN_SECONDS, SNAPSHOTS_DIR,
     UNKNOWN_FACE_MATCH_TOLERANCE, UNKNOWN_ID_EXPIRY_SECONDS,
     ENABLE_LIVENESS_CHECK, REPEAT_OFFENDER_MATCH_TOLERANCE, REPEAT_OFFENDER_THRESHOLD,
-    CONFIDENCE_MIN_FRAMES
+    CONFIDENCE_MIN_FRAMES, ENABLE_TEXTURE_ANTISPOOF
 )
 from error_handler import logger, error_context
 from database import log_event, match_or_add_watchlist
-from liveness import LivenessChecker
+from liveness import LivenessChecker, TextureAntiSpoofChecker
 from alerts import send_alert_email_async
 
 
@@ -92,6 +92,7 @@ class EntryExitTracker:
         self.state = {}
         self.unknown_registry = UnknownFaceRegistry()
         self.liveness = LivenessChecker()
+        self.texture_checker = TextureAntiSpoofChecker()
         self.camera_location = camera_location
 
     def _key_for(self, result, now):
@@ -210,10 +211,23 @@ class EntryExitTracker:
             if ENABLE_LIVENESS_CHECK:
                 self.liveness.update(key, r.get("landmarks"), now)
                 r["is_live"] = self.liveness.has_blinked(key)
-                r["spoof_suspected"] = self.liveness.is_spoof_suspected(key, now)
+                blink_spoof = self.liveness.is_spoof_suspected(key, now)
             else:
                 r["is_live"] = True
-                r["spoof_suspected"] = False
+                blink_spoof = False
+
+            texture_spoof = False
+            if ENABLE_TEXTURE_ANTISPOOF and frame is not None:
+                top, right, bottom, left = r["box"]
+                if bottom > top and right > left:
+                    face_crop = frame[top:bottom, left:right]
+                    texture_spoof = self.texture_checker.update(key, face_crop, now)
+
+            # Combined signal: either a sustained lack of blinking OR
+            # suspiciously flat image texture is enough to flag spoof —
+            # texture can trigger faster (no need to wait for the blink
+            # timeout), blink catches cases texture analysis might miss.
+            r["spoof_suspected"] = blink_spoof or texture_spoof
 
             st = self.state.setdefault(key, {
                 "present": False,
@@ -261,5 +275,6 @@ class EntryExitTracker:
                     st["last_log_time"] = now
                 st["present"] = False
                 self.liveness.forget(key)
+                self.texture_checker.forget(key)
 
         self.unknown_registry.cleanup(now)

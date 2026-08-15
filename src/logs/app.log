@@ -24,3 +24,156 @@
 2026-08-14 12:14:12 | INFO     | Logged EXIT for UNKNOWN person (log_id=3)
 2026-08-14 12:14:12 | INFO     | EXIT: unknown (unknown_1)
 2026-08-14 12:14:13 | INFO     | Live feed stopped: Main Entrance
+2026-08-15 13:43:28 | INFO     | Database backend: postgresql
+2026-08-15 13:43:30 | INFO     | Database initialized (tables ready) — backend: postgresql
+2026-08-15 13:43:30 | INFO     | Data retention purge: removed 0 log(s), 0 snapshot file(s), 0 watchlist entry(ies) older than 90 days.
+2026-08-15 13:43:30 | INFO     | FaceEncoder initialized with 0 known person(s)
+2026-08-15 13:43:32 | INFO     | Database initialized (tables ready) — backend: postgresql
+2026-08-15 13:43:32 | INFO     | ==================================================
+2026-08-15 13:43:32 | INFO     | SYSTEM HEALTH CHECK
+2026-08-15 13:43:32 | INFO     | ==================================================
+2026-08-15 13:43:32 | INFO     | [PASS] Face Detection Model: Face detection model loaded successfully.
+2026-08-15 13:43:32 | INFO     | [PASS] Camera(s): Main Entrance: OK
+2026-08-15 13:43:32 | INFO     | [PASS] Database: Database OK (backend: postgresql) — 0 registered person(s).
+2026-08-15 13:43:32 | INFO     | [PASS] Encryption: Encryption key present and working.
+2026-08-15 13:43:32 | INFO     | [PASS] Admin Authentication: Admin password is set.
+2026-08-15 13:43:32 | INFO     | [PASS] Email Alerts (optional): Email alerts configured.
+2026-08-15 13:43:32 | INFO     | ==================================================
+2026-08-15 13:43:32 | INFO     | All critical checks passed. System ready.
+2026-08-15 13:43:32 | INFO     | Starting web app at http://127.0.0.1:5000
+2026-08-15 13:43:50 | INFO     | Face detector model loaded successfully
+2026-08-15 13:43:50 | INFO     | FaceEncoder initialized with 0 known person(s)
+2026-08-15 13:43:51 | INFO     | Live feed started: Main Entrance
+2026-08-15 13:43:54 | WARNING  | REPEAT OFFENDER: unregistered visitor seen 3 times (watch_id=1)
+2026-08-15 13:43:54 | INFO     | Logged ENTRY for UNKNOWN person (log_id=4)
+2026-08-15 13:43:54 | INFO     | ENTRY: unknown (unknown_1) — REPEAT OFFENDER, seen 3x
+2026-08-15 13:44:01 | INFO     | Alert email sent: Repeat Unregistered Visitor
+2026-08-15 13:44:20 | INFO     | Logged EXIT for UNKNOWN person (log_id=5)
+2026-08-15 13:44:20 | INFO     | EXIT: unknown (unknown_1)
+2026-08-15 13:44:54 | INFO     | Logged ENTRY for UNKNOWN person (log_id=6)
+2026-08-15 13:44:54 | INFO     | ENTRY: unknown (unknown_3)
+2026-08-15 13:45:00 | INFO     | Alert email sent: Spoof Attempt Detected
+2026-08-15 13:45:08 | INFO     | Logged EXIT for UNKNOWN person (log_id=7)
+2026-08-15 13:45:08 | INFO     | EXIT: unknown (unknown_3)
+2026-08-15 13:45:09 | INFO     | Live feed stopped: Main Entrance
+2026-08-15 13:47:30 | INFO     | Database backend: postgresql
+2026-08-15 13:47:31 | INFO     | Database initialized (tables ready) — backend: postgresql
+2026-08-15 13:47:31 | INFO     | Data retention purge: removed 0 log(s), 0 snapshot file(s), 0 watchlist entry(ies) older than 90 days.
+2026-08-15 13:47:31 | INFO     | FaceEncoder initialized with 0 known person(s)
+2026-08-15 13:47:33 | INFO     | Database initialized (tables ready) — backend: postgresql
+2026-08-15 13:47:33 | INFO     | ==================================================
+2026-08-15 13:47:33 | INFO     | SYSTEM HEALTH CHECK
+2026-08-15 13:47:33 | INFO     | ==================================================
+2026-08-15 13:47:33 | INFO     | [PASS] Face Detection Model: Face detection model loaded successfully.
+2026-08-15 13:47:33 | INFO     | [PASS] Camera(s): Main Entrance: OK
+2026-08-15 13:47:33 | INFO     | [PASS] Database: Database OK (backend: postgresql) — 0 registered person(s).
+2026-08-15 13:47:33 | INFO     | [PASS] Encryption: Encryption key present and working.
+2026-08-15 13:47:33 | INFO     | [PASS] Admin Authentication: Admin password is set.
+2026-08-15 13:47:33 | INFO     | [PASS] Email Alerts (optional): Email alerts configured.
+2026-08-15 13:47:33 | INFO     | ==================================================
+2026-08-15 13:47:33 | INFO     | All critical checks passed. System ready.
+2026-08-15 13:47:33 | INFO     | Starting web app at http://127.0.0.1:5000
+2026-08-15 13:48:03 | INFO     | Database backend: postgresql
+2026-08-15 13:48:05 | INFO     | Database initialized (tables ready) — backend: postgresql
+2026-08-15 13:48:05 | INFO     | Data retention purge: removed 0 log(s), 0 snapshot file(s), 0 watchlist entry(ies) older than 90 days.
+2026-08-15 13:48:05 | INFO     | FaceEncoder initialized with 0 known person(s)
+2026-08-15 13:48:07 | INFO     | Database initialized (tables ready) — backend: postgresql
+2026-08-15 13:48:07 | INFO     | ==================================================
+2026-08-15 13:48:07 | INFO     | SYSTEM HEALTH CHECK
+2026-08-15 13:48:07 | INFO     | ==================================================
+2026-08-15 13:48:07 | INFO     | [PASS] Face Detection Model: Face detection model loaded successfully.
+2026-08-15 13:48:07 | INFO     | [PASS] Camera(s): Main Entrance: OK
+2026-08-15 13:48:07 | INFO     | [PASS] Database: Database OK (backend: postgresql) — 0 registered person(s).
+2026-08-15 13:48:07 | INFO     | [PASS] Encryption: Encryption key present and working.
+2026-08-15 13:48:07 | INFO     | [PASS] Admin Authentication: Admin password is set.
+2026-08-15 13:48:07 | INFO     | [PASS] Email Alerts (optional): Email alerts configured.
+2026-08-15 13:48:07 | INFO     | ==================================================
+2026-08-15 13:48:07 | INFO     | All critical checks passed. System ready.
+2026-08-15 13:48:07 | INFO     | Starting web app at http://127.0.0.1:5000
+2026-08-15 13:49:28 | INFO     | Database initialized (tables ready) — backend: postgresql
+2026-08-15 13:50:45 | INFO     | Settings updated via web UI by 'Anuj kumar'.
+2026-08-15 13:51:09 | INFO     | Face detector model loaded successfully
+2026-08-15 13:51:09 | INFO     | FaceEncoder initialized with 0 known person(s)
+2026-08-15 13:51:10 | INFO     | Live feed started: Main Entrance
+2026-08-15 13:51:13 | WARNING  | REPEAT OFFENDER: unregistered visitor seen 4 times (watch_id=1)
+2026-08-15 13:51:13 | INFO     | Logged ENTRY for UNKNOWN person (log_id=8)
+2026-08-15 13:51:13 | INFO     | ENTRY: unknown (unknown_1) — REPEAT OFFENDER, seen 4x
+2026-08-15 13:51:20 | INFO     | Alert email sent: Repeat Unregistered Visitor
+2026-08-15 13:51:37 | INFO     | Live feed stopped: Main Entrance
+2026-08-15 13:51:47 | INFO     | Face detector model loaded successfully
+2026-08-15 13:51:47 | INFO     | FaceEncoder initialized with 0 known person(s)
+2026-08-15 13:51:48 | INFO     | Live feed started: Main Entrance
+2026-08-15 13:51:52 | INFO     | Logged ENTRY for UNKNOWN person (log_id=9)
+2026-08-15 13:51:52 | INFO     | ENTRY: unknown (unknown_1)
+2026-08-15 13:51:58 | INFO     | Alert email sent: Unknown Person Detected
+2026-08-15 13:52:07 | INFO     | Live feed stopped: Main Entrance
+2026-08-15 13:54:00 | INFO     | Face detector model loaded successfully
+2026-08-15 13:58:30 | INFO     | Database backend: postgresql
+2026-08-15 13:58:31 | INFO     | Database initialized (tables ready) — backend: postgresql
+2026-08-15 13:58:31 | INFO     | Data retention purge: removed 0 log(s), 0 snapshot file(s), 0 watchlist entry(ies) older than 90 days.
+2026-08-15 13:58:31 | INFO     | FaceEncoder initialized with 0 known person(s)
+2026-08-15 13:58:33 | INFO     | Database initialized (tables ready) — backend: postgresql
+2026-08-15 13:58:34 | INFO     | ==================================================
+2026-08-15 13:58:34 | INFO     | SYSTEM HEALTH CHECK
+2026-08-15 13:58:34 | INFO     | ==================================================
+2026-08-15 13:58:34 | INFO     | [PASS] Face Detection Model: Face detection model loaded successfully.
+2026-08-15 13:58:34 | INFO     | [PASS] Camera(s): Main Entrance: OK
+2026-08-15 13:58:34 | INFO     | [PASS] Database: Database OK (backend: postgresql) — 0 registered person(s).
+2026-08-15 13:58:34 | INFO     | [PASS] Encryption: Encryption key present and working.
+2026-08-15 13:58:34 | INFO     | [PASS] Admin Authentication: Admin password is set.
+2026-08-15 13:58:34 | INFO     | [PASS] Email Alerts (optional): Email alerts configured.
+2026-08-15 13:58:34 | INFO     | ==================================================
+2026-08-15 13:58:34 | INFO     | All critical checks passed. System ready.
+2026-08-15 13:58:34 | INFO     | Starting web app at http://127.0.0.1:5000
+2026-08-15 13:59:00 | INFO     | Face detector model loaded successfully
+2026-08-15 14:01:28 | INFO     | Database backend: postgresql
+2026-08-15 14:01:29 | INFO     | Database initialized (tables ready) — backend: postgresql
+2026-08-15 14:01:30 | INFO     | Data retention purge: removed 0 log(s), 0 snapshot file(s), 0 watchlist entry(ies) older than 90 days.
+2026-08-15 14:01:30 | INFO     | FaceEncoder initialized with 0 known person(s)
+2026-08-15 14:01:32 | INFO     | Database initialized (tables ready) — backend: postgresql
+2026-08-15 14:01:32 | INFO     | ==================================================
+2026-08-15 14:01:32 | INFO     | SYSTEM HEALTH CHECK
+2026-08-15 14:01:32 | INFO     | ==================================================
+2026-08-15 14:01:32 | INFO     | [PASS] Face Detection Model: Face detection model loaded successfully.
+2026-08-15 14:01:32 | INFO     | [PASS] Camera(s): Main Entrance: OK
+2026-08-15 14:01:32 | INFO     | [PASS] Database: Database OK (backend: postgresql) — 0 registered person(s).
+2026-08-15 14:01:32 | INFO     | [PASS] Encryption: Encryption key present and working.
+2026-08-15 14:01:32 | INFO     | [PASS] Admin Authentication: Admin password is set.
+2026-08-15 14:01:32 | INFO     | [PASS] Email Alerts (optional): Email alerts configured.
+2026-08-15 14:01:32 | INFO     | ==================================================
+2026-08-15 14:01:32 | INFO     | All critical checks passed. System ready.
+2026-08-15 14:01:32 | INFO     | Starting web app at http://127.0.0.1:5000
+2026-08-15 14:02:01 | INFO     | Face detector model loaded successfully
+2026-08-15 14:02:32 | INFO     | Registered new person: Anuj Kumar (ID: 1DA23AI) -> person_id=1
+2026-08-15 14:02:47 | INFO     | Face detector model loaded successfully
+2026-08-15 14:02:48 | INFO     | FaceEncoder initialized with 1 known person(s)
+2026-08-15 14:02:49 | INFO     | Live feed started: Main Entrance
+2026-08-15 14:02:51 | INFO     | Logged ENTRY for person_id=1 (log_id=10)
+2026-08-15 14:02:51 | INFO     | ENTRY: Anuj Kumar
+2026-08-15 14:03:20 | INFO     | Logged EXIT for person_id=1 (log_id=11)
+2026-08-15 14:03:20 | INFO     | EXIT: Anuj Kumar
+2026-08-15 14:03:51 | INFO     | Logged ENTRY for UNKNOWN person (log_id=12)
+2026-08-15 14:03:51 | INFO     | ENTRY: unknown (unknown_1)
+2026-08-15 14:03:57 | INFO     | Alert email sent: Unknown Person Detected
+2026-08-15 14:04:03 | INFO     | Logged EXIT for UNKNOWN person (log_id=13)
+2026-08-15 14:04:03 | INFO     | EXIT: unknown (unknown_1)
+2026-08-15 14:04:06 | INFO     | Logged ENTRY for person_id=1 (log_id=14)
+2026-08-15 14:04:06 | INFO     | ENTRY: Anuj Kumar — SPOOF SUSPECTED (no blink detected)
+2026-08-15 14:04:40 | INFO     | Live feed stopped: Main Entrance
+2026-08-15 14:15:41 | INFO     | Database backend: postgresql
+2026-08-15 14:15:42 | INFO     | Database initialized (tables ready) — backend: postgresql
+2026-08-15 14:15:42 | INFO     | Data retention purge: removed 0 log(s), 0 snapshot file(s), 0 watchlist entry(ies) older than 90 days.
+2026-08-15 14:15:42 | INFO     | FaceEncoder initialized with 0 known person(s)
+2026-08-15 14:15:44 | INFO     | Database initialized (tables ready) — backend: postgresql
+2026-08-15 14:15:44 | INFO     | ==================================================
+2026-08-15 14:15:44 | INFO     | SYSTEM HEALTH CHECK
+2026-08-15 14:15:44 | INFO     | ==================================================
+2026-08-15 14:15:44 | INFO     | [PASS] Face Detection Model: Face detection model loaded successfully.
+2026-08-15 14:15:44 | INFO     | [PASS] Camera(s): Main Entrance: OK
+2026-08-15 14:15:44 | INFO     | [PASS] Database: Database OK (backend: postgresql) — 1 registered person(s).
+2026-08-15 14:15:44 | INFO     | [PASS] Encryption: Encryption key present and working.
+2026-08-15 14:15:44 | INFO     | [PASS] Admin Authentication: Admin password is set.
+2026-08-15 14:15:44 | INFO     | [PASS] Email Alerts (optional): Email alerts configured.
+2026-08-15 14:15:44 | INFO     | ==================================================
+2026-08-15 14:15:44 | INFO     | All critical checks passed. System ready.
+2026-08-15 14:15:44 | INFO     | Starting web app at http://127.0.0.1:5000

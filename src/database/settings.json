@@ -1,0 +1,19 @@
+{
+  "CAMERAS": [
+    {
+      "id": "cam1",
+      "name": "Main Entrance",
+      "source": 0
+    }
+  ],
+  "FACE_MATCH_TOLERANCE": 0.6,
+  "EXIT_TIMEOUT_SECONDS": 5,
+  "LOG_COOLDOWN_SECONDS": 10,
+  "PROCESS_EVERY_N_FRAMES": 3,
+  "ENABLE_LIVENESS_CHECK": true,
+  "LIVENESS_EAR_THRESHOLD": 0.21,
+  "LIVENESS_TIMEOUT_SECONDS": 8,
+  "REPEAT_OFFENDER_THRESHOLD": 3,
+  "ENABLE_ALERT_SOUND": true,
+  "ALERT_COOLDOWN_SECONDS": 5
+}

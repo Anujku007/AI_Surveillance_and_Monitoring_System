@@ -74,6 +74,19 @@ class RegistrationCamera:
         with self._lock:
             return None if self._latest_raw is None else self._latest_raw.copy()
 
+    def capture(self):
+        """
+        Atomically returns (raw_frame, face_count) from the exact same
+        snapshot — use this instead of separately calling get_face_count()
+        then capture_raw_frame(), which can race against the background
+        thread updating between the two calls and cause a spurious
+        'face detection changed' mismatch at capture time.
+        """
+        with self._lock:
+            if self._latest_raw is None:
+                return None, 0
+            return self._latest_raw.copy(), self._face_count
+
     def _loop(self):
         while self.running:
             ret, frame = self.cap.read()

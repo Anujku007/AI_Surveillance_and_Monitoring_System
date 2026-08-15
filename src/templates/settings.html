@@ -67,6 +67,17 @@
       </div>
 
       <div class="settings-card">
+        <h3>Texture-Based Anti-Spoofing</h3>
+        <p class="hint">Secondary signal alongside blink detection — flags suspiciously flat/low-detail faces (printed photos, screen replays) faster than waiting for the blink timeout.</p>
+        <label class="checkbox-label">
+          <input type="checkbox" name="enable_texture_antispoof" {% if s.ENABLE_TEXTURE_ANTISPOOF %}checked{% endif %}>
+          Enable texture-based anti-spoofing
+        </label>
+        <label>Texture Variance Threshold <span class="hint-inline">(lower = stricter; tune against your camera)</span></label>
+        <input type="number" step="1" name="texture_threshold" value="{{ s.TEXTURE_LAPLACIAN_THRESHOLD }}">
+      </div>
+
+      <div class="settings-card">
         <h3>Alerts</h3>
         <label class="checkbox-label">
           <input type="checkbox" name="enable_alert_sound" {% if s.ENABLE_ALERT_SOUND %}checked{% endif %}>
